@@ -4,7 +4,13 @@ const serveStatic = require('serve-static');
 const cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 const expressSession = require('express-session');
+
+//DB 관련 코드
 var dbConfig = require(__dirname = '/config/db.js');
+var conn = dbConfig.init();
+dbConfig.connect(conn);
+
+
 var settingRouter = require('./routes/setting'); // setting 라우터 생성
 
 
