@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB - <%= title %></title>
+</head>
+<body>
+    <h1><a href='/'>WEB</a></h1>
+    <a href="/author/">Author</a>
+    <ol type="1">
+        <% var i = 0; %>
+        <% while (i < list.length) { %>
+            <li><a href="#">
+                <%= list[i].title %>
+            </a></li>
+            <% i++; %>
+        <% } %>
+    </ol>
+</body>
+</html>
