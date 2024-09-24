@@ -1,99 +1,95 @@
-// var http = require('http');
-// var fs = require('fs');
-// var app = http.createServer(function (request, response) {
-
-//     var url = request.url;
-//     if(request.url === '/') {
-//         url = '/index.html';
-//     }
-//     if(request.url == '/favicon.ico') {
-//         return response.writeHead(404);
-//         response.end();
-//         return;
-//     }
-//     response.writeHead(200);
-//     console.log(__dirname + url);
-//     response.end(fs.readFileSync(__dirname + url));
-// });
-// app.listen(3000);
-
-
-
-// const express = require('express') // express 모듈을 import, const에 의해 express 변수는 값이 바뀌지 않는다.
-// const app = express() // ex[ress() 함수에 의해 Applicaiton 객체를 app에 저장
-
-// app.get('/', (req, res) => res.end('Hello, Express!')) // app.get() 함수로 '/' 경로로 GET 요청
-// app.get('/author', (req,res) => res.send('/author'))
-// app.listen(3000, () => console.log('Server is running on port 3000'))
-
-
-
-// const express = require('express') // express 모듈을 import, const에 의해 express 변수는 값이 바뀌지 않는다.
-// const app = express(); // ex[ress() 함수에 의해 Applicaiton 객체를 app에 저장
-// var urlm = require('url');
-
-// app.get('/', (req, res) => {
-//     var_url = req.url;
-//     title = 'hello';
-//     var queryData = urlm.parse(_url, true).query
-//     console.log(queryData.id);
-//     var title = queryData.id;
-
-//     var template = `
-//     <!doctype html>
-// <html>
-// <head>
-// <title>WEB1 - ${title}</title>
-// <meta charset="utf-8">
-// </head>
-// <body>
-// <h1><a href="/">WEB</a></h1>
-// <ol>
-// <li><a href="/?id=HTML">HTML</a></li>
-// <li><a href="/?id=CSS">CSS</a></li>
-// <li><a href="/?id=JavaScript">JavaScript</a></li>
-// </ol>
-// <h2>${title}</h2>
-// <p>Test</p>
-// </body>
-// </html> ` ;
-// res.send(template);
-// }) ;
-// app.get('/favicon.ico',(req, res)=>res.writeHead(404));
-// app.listen(3000, () => console.log('Example app listening on port 3000!')) ;
-
-
-const express = require('express'); // express 모듈을 import
-const app = express(); // express() 함수로 Application 객체 생성
-var urlm = require('url'); // url 모듈 import
-
+//손수민 202239895
+//웹DB 2주차 과제
+const express = require('express');
+const app = express();
+const port = 3000;
+// 기본 URL에서 책과 음악을 표시
 app.get('/', (req, res) => {
-    var _url = req.url; // req.url을 _url 변수에 저장
-    var queryData = urlm.parse(_url, true).query; // _url을 파싱하여 queryData 저장
-    var title = queryData.id || 'hello'; // queryData.id가 없으면 기본값으로 'hello' 사용
-
-    var template = `
-    <!doctype html>
+  res.send(`
     <html>
-    <head>
-        <title>WEB1 - ${title}</title>
-        <meta charset="utf-8">
-    </head>
-    <body>
-        <h1><a href="/">WEB</a></h1>
-        <ol>
-            <li><a href="/?id=HTML">HTML</a></li>
-            <li><a href="/?id=CSS">CSS</a></li>
-            <li><a href="/?id=JavaScript">JavaScript</a></li>
-        </ol>
-        <h2>${title}</h2>
-        <p>Test</p>
-    </body>
-    </html>`;
-    
-    res.send(template);
+      <head>
+        <title>웹DB 2주차 과제</title>
+        <style>
+          .hover-message {
+            display: none;
+            position: absolute;
+            background-color: lightblue;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>책과 음악이 있는 곳</h1>
+        <hr>
+        <h3>
+          <a href="/BOOK" id="book-link">1. 책</a>
+          <span class="hover-message" id="book-message">127.0.0.1:3000/BOOK</span>
+        </h3>
+        <h3>
+          <a href="/MUSIC" id="music-link">2. 음악</a>
+          <span class="hover-message" id="music-message">127.0.0.1:3000/MUSIC</span>
+        </h3>
+
+        <script>
+          // 책 링크에 마우스를 올렸을 때 메시지 표시
+          document.getElementById('book-link').addEventListener('mouseover', function() {
+            document.getElementById('book-message').style.display = 'inline';
+          });
+          document.getElementById('book-link').addEventListener('mouseout', function() {
+            document.getElementById('book-message').style.display = 'none';
+          });
+
+          // 음악 링크에 마우스를 올렸을 때 메시지 표시
+          document.getElementById('music-link').addEventListener('mouseover', function() {
+            document.getElementById('music-message').style.display = 'inline';
+          });
+          document.getElementById('music-link').addEventListener('mouseout', function() {
+            document.getElementById('music-message').style.display = 'none';
+          });
+        </script>
+      </body>
+    </html>
+  `);
 });
-
-app.get('/favicon.ico', (req, res) => res.sendStatus(404)); // favicon 처리
-
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+// 책을 클릭했을 때의 페이지
+app.get('/BOOK', (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>웹DB 2주차 과제</title>
+      </head>
+      <body>
+        <h1><a href="/">책과 음악이 있는곳</h1>
+        <hr>
+        <h3>1. 책</h3>
+        <ul>
+          <li>총균쇠</li>
+          <li>내면소통</li>
+        </ul>
+        <h3>2. <a href="/MUSIC">음악</a></h3>
+      </body>
+    </html>
+  `);
+});
+// 음악을 클릭했을 때의 페이지
+app.get('/MUSIC', (req, res) => {
+    res.send(`
+      <html>
+        <head>
+          <title>웹DB 2주차 과제</title>
+        </head>
+        <body>
+          <h1><a href="/">책과 음악이 있는곳</h1>
+          <hr>
+          <h3>1. <a href="/BOOK">책</a></h3>
+          <h3>2. 음악</h3>
+          <ul>
+          <li>바빌론 강가에서</li>
+          <li>I'll be missing you</li>
+          </ul>
+        </body>
+      </html>
+    `);
+  });
+app.listen(port, () => {
+  console.log(`서버가 http://127.0.0.1:${port} 에서 실행 중입니다.`);
+});
