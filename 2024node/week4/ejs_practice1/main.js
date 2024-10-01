@@ -18,7 +18,7 @@ connection.connect();
 app.get('/', (req, res) => {
     connection.query('SELECT * FROM topic', (error, results)=>{
         var context = {list:results,
-            title:'Welcom'};
+            title:'Welcome'};
             console.log(context)
             res.render('home', context, (err, html)=>
             {res.end(html)})
