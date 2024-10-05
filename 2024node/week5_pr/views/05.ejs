@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="data:,">
+    <style>
+        a {
+            text-decoration: none;
+            color: rgba(13, 7, 185, 0.859);
+            font-size: 13px;
+        }
+        p, input, textarea {
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+<h2>개인일정관리</h2>
+<hr>
+<h3>개인일정목록</h3>
+
+<ol type="1">
+    <% var i = 0;
+            while(schedules.length > i) { %>
+        <li><a href="/page/<%= schedules[i].id %>"><%= schedules[i].title %></a></li>
+    <% i++; } %>
+</ol>
+
+<hr>
+
+<div>
+    <%- menu %>
+</div>
+
+<hr>
+
+<div>
+    <%- detail %>
+</div>
+
+</body>
+</html>

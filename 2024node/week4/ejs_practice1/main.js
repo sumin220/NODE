@@ -41,8 +41,9 @@ app.get('/:id', (req, res) => {
     var id = req.params.id;
 
 var context = {title:id,
-    name:'손수민',
-    number:'202239895'
+    name: '손수민',
+    number: '202239895',
+
 };
 
 res.render('home', context, (err, html)=> {
