@@ -18,6 +18,7 @@
   "homepage": "https://github.com/sumin220/NODE#readme",
   "dependencies": {
     "body-parser": "^1.20.3",
+    "cookie": "^0.7.2",
     "ejs": "^3.1.10",
     "express": "^4.21.0",
     "mysql": "^2.18.1",
