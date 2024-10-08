@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>WEB1</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <title>Node.js App</title>
 </head>
 <body>
 <h1><a href="/">WEB</a></h1>
 <ol>
-    <% for (var i = 0; i < list.length; i++) { %>
+    <% for(var i = 0; i < list.length; i++) { %>
         <li><a href="/page/<%= list[i].id %>"><%= list[i].title %></a></li>
     <% } %>
 </ol>

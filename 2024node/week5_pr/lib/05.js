@@ -75,7 +75,7 @@ module.exports = {
         );
     },
 
-    // 일정 수정 페이지
+// 일정 수정 페이지
     update: (req, res, connection) => {
         const id = req.params.pageId;
         connection.query('SELECT * FROM schedule05', (error, schedules) => {
@@ -86,15 +86,17 @@ module.exports = {
 
                 const context = {
                     schedules: schedules,
-                    menu: `<a href="/create">Create</a> &nbsp; <a href="/update/${id}">Update</a> &nbsp; <a href="/delete/${id}" onclick="return confirm('Are you sure you want to delete this schedule?');">Delete</a>`,
+                    menu: `<a href="/create">일정 생성</a> &nbsp; <a href="/update/${id}">일정 수정</a> &nbsp; <a href="/delete/${id}" onclick="return confirm('정말 일정을 삭제하시겠습니까?');">일정 삭제</a>`,
                     detail: `
-                        <form action="/update_process" method="post">
-                            <input type="hidden" name="id" value="${schedule[0].id}">
-                            <p><input type="text" name="title" value="${schedule[0].title}"></p>
-                            <p><textarea name="description">${schedule[0].descrpt}</textarea></p>
-                            <p><input type="submit" value="Submit"></p>
-                        </form>
-                    `
+                    <form action="/update_process" method="post">
+                        <input type="hidden" name="id" value="${schedule[0].id}">
+                        <p><input type="text" name="title" value="${schedule[0].title}" placeholder="일정제목"></p>
+                        <p><input type="text" name="start" value="${schedule[0].start}" placeholder="시작날짜(YYYYMMDD)"></p>
+                        <p><input type="text" name="end" value="${schedule[0].end}" placeholder="종료날짜(YYYYMMDD)"></p>
+                        <p><textarea name="content" placeholder="내용">${schedule[0].content}</textarea></p>
+                        <p><input type="submit" value="제출"></p>
+                    </form>
+                `
                 };
 
                 res.render('05', context);
@@ -102,13 +104,17 @@ module.exports = {
         });
     },
 
-    // 일정 수정 처리
+// 일정 수정 처리
     update_process: (req, res, connection) => {
-        const { id, title, description } = req.body;
-        connection.query('UPDATE schedule05 SET title = ?, descrpt = ? WHERE id = ?', [title, description, id], (error) => {
-            if (error) throw error;
-            res.redirect(`/page/${id}`);
-        });
+        const { id, title, start, end, content } = req.body;
+        connection.query(
+            'UPDATE schedule05 SET title = ?, start = ?, end = ?, content = ? WHERE id = ?',
+            [title, start, end, content, id],
+            (error) => {
+                if (error) throw error;
+                res.redirect(`/page/${id}`);
+            }
+        );
     },
 
     // 일정 삭제 처리
@@ -118,5 +124,31 @@ module.exports = {
             if (error) throw error;
             res.redirect('/');
         });
-    }
+    },
+
+    // 전체 일정 목록 페이지
+    list: (req, res, connection) => {
+        connection.query('SELECT * FROM schedule05', (error, schedules) => {
+            if (error) throw error;
+
+            let detail = '';
+            schedules.forEach(schedule => {
+                detail += `
+                <h3>${schedule.title}</h3>
+                <p><strong>시작일:</strong> ${schedule.start}</p>
+                <p><strong>종료일:</strong> ${schedule.end}</p>
+                <p><strong>내용:</strong> ${schedule.content}</p>
+                <hr>
+            `;
+            });
+
+            const context = {
+                schedules: schedules,
+                menu: `<a href="/create">일정 생성</a>`,
+                detail: detail
+            };
+
+            res.render('05', context);
+        });
+    },
 };

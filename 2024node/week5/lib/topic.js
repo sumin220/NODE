@@ -1,118 +1,130 @@
+const db = require('./db');
 const qs = require('querystring');
 
-module.exports = {
-    home: (req, res, connection) => {
-        connection.query('SELECT * FROM schedule05', (error, schedule05s) => {
-            if (error) throw error;
+// 홈 화면 - 글 목록
+exports.home = (req, res) => {
+    db.query('SELECT * FROM topic', (error, topics) => {
+        if (error) throw error;
+        const context = {
+            list: topics,
+            menu: '<a href="/create">create</a>',
+            body: '<h2>Welcome</h2><p>Node.js Start Page</p>',
+        };
+        res.render('home', context);
+    });
+};
 
+// 글 상세 보기
+exports.page = (req, res) => {
+    const id = req.params.pageId;
+    db.query('SELECT * FROM topic', (error, topics) => {
+        if (error) throw error;
+        db.query('SELECT * FROM topic WHERE id = ?', [id], (error2, topic) => {
+            if (error2) throw error2;
             const context = {
-                list: schedule05s,
-                menu: '<a href="/create">create</a>',
-                body: '<h2>Welcome</h2><p>Node.js Start Page</p>'
+                list: topics,
+                menu: `<a href="/create">create</a>&nbsp;&nbsp;<a href="/update/${topic[0].id}">update</a>&nbsp;&nbsp;<a href="/delete/${topic[0].id}" onclick='return confirm("정말로 삭제하시겠습니까?")'>delete</a>`,
+                body: `<h2>${topic[0].title}</h2><p>${topic[0].descrpt}</p>`,
             };
-
-            req.app.render('home', context, (err, html) => {
-                res.end(html);
-            });
+            res.render('home', context);
         });
-    },
+    });
+};
 
-    page: (req, res, connection) => {
-        const id = req.params.pageId;
-        connection.query('SELECT * FROM schedule05', (error, schedule05s) => {
-            if (error) throw error;
+// 글 생성 화면
+exports.create = (req, res) => {
+    db.query('SELECT * FROM topic', (error, topics) => {
+        if (error) throw error;
+        const context = {
+            list: topics,
+            menu: '<a href="/create">create</a>',
+            body: `<form action="/create_process" method="post">
+              <p><input type="text" name="title" placeholder="title"></p>
+              <p><textarea name="description" placeholder="description"></textarea></p>
+              <p><input type="submit"></p>
+            </form>`,
+        };
+        res.render('home', context);
+    });
+};
 
-            connection.query('SELECT * FROM schedule05 WHERE id = ?', [id], (error2, schedule05) => {
-                if (error2) throw error2;
+// 글 생성 화면
+exports.create = (req, res) => {
+    db.query('SELECT * FROM topic', (error, topics) => {
+        if (error) throw error;
+        const context = {
+            list: topics,
+            menu: '<a href="/create">create</a>',
+            body: `<form action="/create_process" method="post">
+              <p><input type="text" name="title" placeholder="title"></p>
+              <p><textarea name="description" placeholder="description"></textarea></p>
+              <p><input type="text" name="author_id" placeholder="author_id (optional)"></p>
+              <p><input type="submit"></p>
+            </form>`,
+        };
+        res.render('home', context);
+    });
+};
 
-                const context = {
-                    list: schedule05s,
-                    menu: `<a href="/create">create</a>&nbsp;&nbsp;<a href="/update/${id}">update</a>&nbsp;&nbsp;<a href="/delete/${id}" onclick="return confirm('정말로 삭제하시겠습니까?');">delete</a>`,
-                    body: `<h2>${schedule05[0].title}</h2><p>${schedule05[0].descrpt}</p>`
-                };
+// 글 생성 처리
+exports.create_process = (req, res) => {
+    let body = '';
+    req.on('data', (data) => {
+        body += data;
+    });
+    req.on('end', () => {
+        const post = qs.parse(body);
+        const authorId = post.author_id || null;  // author_id가 없으면 null로 저장
+        db.query(
+            'INSERT INTO topic (title, descrpt, created, author_id) VALUES (?, ?, NOW(), ?)',
+            [post.title, post.description, authorId],
+            (error, result) => {
+                if (error) throw error;
+                res.redirect(`/page/${result.insertId}`);
+            }
+        );
+    });
+};
 
-                req.app.render('home', context, (err, html) => {
-                    res.end(html);
-                });
-            });
-        });
-    },
-
-    create: (req, res, connection) => {
-        connection.query('SELECT * FROM schedule05', (error, schedule05s) => {
-            if (error) throw error;
-
-            const body = `
-                <form action="/create_process" method="post">
-                    <p><input type="text" name="title" placeholder="title"></p>
-                    <p><textarea name="description" placeholder="description"></textarea></p>
-                    <p><input type="submit" value="Submit"></p>
-                </form>
-            `;
-
+// 글 수정 화면
+exports.update = (req, res) => {
+    const id = req.params.pageId;
+    db.query('SELECT * FROM topic', (error, topics) => {
+        if (error) throw error;
+        db.query('SELECT * FROM topic WHERE id = ?', [id], (error2, topic) => {
+            if (error2) throw error2;
             const context = {
-                list: schedule05s,
-                menu: '<a href="/create">create</a>',
-                body: body
+                list: topics,
+                menu: `<a href="/create">create</a>&nbsp;&nbsp;<a href="/update/${topic[0].id}">update</a>&nbsp;&nbsp;<a href="/delete/${topic[0].id}" onclick='return confirm("정말로 삭제하시겠습니까?")'>delete</a>`,
+                body: `<form action="/update_process" method="post">
+                <input type="hidden" name="id" value="${topic[0].id}">
+                <p><input type="text" name="title" value="${topic[0].title}"></p>
+                <p><textarea name="description">${topic[0].descrpt}</textarea></p>
+                <p><input type="text" name="author_id" value="${topic[0].author_id}"></p>
+                <p><input type="submit"></p>
+              </form>`,
             };
-
-            req.app.render('home', context, (err, html) => {
-                res.end(html);
-            });
+            res.render('home', context);
         });
-    },
+    });
+};
 
-    create_process: (req, res, connection) => {
-        const { title, description } = req.body;
-        connection.query('INSERT INTO schedule05 (title, descrpt, created) VALUES (?, ?, NOW())', [title, description], (error, result) => {
-            if (error) throw error;
-            res.redirect(`/page/${result.insertId}`);
-        });
-    },
-
-    update: (req, res, connection) => {
-        const id = req.params.pageId;
-        connection.query('SELECT * FROM schedule05', (error, schedule05s) => {
-            if (error) throw error;
-
-            connection.query('SELECT * FROM schedule05 WHERE id = ?', [id], (error2, schedule05) => {
-                if (error2) throw error2;
-
-                const body = `
-                    <form action="/update_process" method="post">
-                        <input type="hidden" name="id" value="${id}">
-                        <p><input type="text" name="title" value="${schedule05[0].title}"></p>
-                        <p><textarea name="description">${schedule05[0].descrpt}</textarea></p>
-                        <p><input type="submit" value="Submit"></p>
-                    </form>
-                `;
-
-                const context = {
-                    list: schedule05s,
-                    menu: `<a href="/create">create</a>&nbsp;&nbsp;<a href="/update/${id}">update</a>&nbsp;&nbsp;<a href="/delete/${id}" onclick="return confirm('정말로 삭제하시겠습니까?');">delete</a>`,
-                    body: body
-                };
-
-                req.app.render('home', context, (err, html) => {
-                    res.end(html);
-                });
-            });
-        });
-    },
-
-    update_process: (req, res, connection) => {
-        const { id, title, description } = req.body;
-        connection.query('UPDATE schedule05 SET title = ?, descrpt = ? WHERE id = ?', [title, description, id], (error, result) => {
-            if (error) throw error;
-            res.redirect(`/page/${id}`);
-        });
-    },
-
-    delete_process: (req, res, connection) => {
-        const id = req.params.pageId;
-        connection.query('DELETE FROM schedule05 WHERE id = ?', [id], (error, result) => {
-            if (error) throw error;
-            res.redirect('/');
-        });
-    }
+// 글 수정 처리
+exports.update_process = (req, res) => {
+    let body = '';
+    req.on('data', (data) => {
+        body += data;
+    });
+    req.on('end', () => {
+        const post = qs.parse(body);
+        const authorId = post.author_id || null;  // 수정 시 author_id도 업데이트
+        db.query(
+            'UPDATE topic SET title = ?, descrpt = ?, author_id = ? WHERE id = ?',
+            [post.title, post.description, authorId, post.id],
+            (error, result) => {
+                if (error) throw error;
+                res.redirect(`/page/${post.id}`);
+            }
+        );
+    });
 };

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WEB1</title>
+    <meta charset="utf-8">
+</head>
+<body>
+
+<h1><a href="/">WEB TOPIC 타이틀</a></h1>
+<a href="/author">author</a>
+<ol>
+    <% for (var i = 0; i < list.length; i++) { %>
+        <li><a href="/page/<%= list[i].id %>"><%= list[i].title %></a></li>
+    <% } %>
+</ol>
+<%- menu %>
+<%- body %>
+</body>
+</html>

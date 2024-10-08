@@ -30,7 +30,7 @@ app.get('/page/:pageId', (req, res) => {
 });
 
 // 일정 수정 페이지
-app.get('/update/:pageId', (req, res) => {
+app.get('/update/:pageId', (req, res) => {s
     schedule.update(req, res, db);
 });
 
