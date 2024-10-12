@@ -8,12 +8,16 @@ module.exports = {
             if (error) throw error;
 
             const context = {
+                title: 'Home Page',
                 list: topics,
                 menu: '<a href="/create">create</a>',
                 body: '<h2>Welcome</h2><p>Node.js Start Page</p>'
             };
 
             req.app.render('home', context, (err, html) => {
+                if (err) {
+                    return res.status(500).send('Error rendering home page.');
+                }
                 res.end(html);
             });
         });
@@ -24,174 +28,149 @@ module.exports = {
         db.query('SELECT * FROM topic', (error, topics) => {
             if (error) throw error;
 
-            // JOIN을 사용하여 topic 테이블과 author 테이블을 연결
-            db.query(`
-      SELECT topic.*, author.name FROM topic LEFT JOIN author ON topic.author_id = author.id WHERE topic.id = ?`, [id], (error2, topic) => {
-                    if (error2) throw error2;
+            db.query(`SELECT * FROM topic LEFT JOIN author ON topic.author_id = author.id WHERE topic.id = ?`, [id], (error2, topic) => {
+                if (error2) throw error2;
 
-                    // 작성자의 이름도 함께 body에 표시
-                    const menu = `
-        <a href="/create">create</a>&nbsp;&nbsp;
-        <a href="/update/${id}">update</a>&nbsp;&nbsp;
-        <a href="/delete/${id}" onclick="return confirm('정말로 삭제하시겠습니까?');">delete</a>
-      `;
-                    const body = `<h2>${topic[0].title}</h2><p>${topic[0].descrpt}</p><p>By ${topic[0].name}</p>`;  // 작성자 추가
+                const menu = `
+                <a href="/create">create</a>&nbsp;&nbsp;
+                <a href="/update/${id}">update</a>&nbsp;&nbsp;
+                <a href="/delete/${id}" onclick="return confirm('정말로 삭제하시겠습니까?');">delete</a>
+            `;  // 폼 대신 <a> 링크로 변경
+                const body = `<h2>${topic[0].title}</h2><p>${topic[0].descrpt}</p><p>By ${topic[0].name}</p>`;
 
-                    const context = { list: topics, menu, body };
+                const context = {title: "page", list: topics, menu: menu, body: body };
 
-                    req.app.render('home', context, (err, html) => {
-                        res.end(html);
-                    });
-                });
-        });
-    },
-
-    create: (req, res) => {
-        db.query(`SELECT * FROM topic`, (error, topics) => {
-            if (error) {
-                throw error;
-            }
-            db.query(`SELECT * FROM author`, (err, authors) => {
-                if (err) throw err;
-                var i = 0;
-                var tag = '';
-                while (i < authors.length) {
-                    tag += `<option value="${authors[i].id}">${authors[i].name}</option>`;
-                    i++;
-                }
-                var context = {
-                    list: topics,
-                    menu: `<a href="/create">create</a>`,
-                    body: `
-          <form action="/create_process" method="post">
-            <p><input type="text" name="title" placeholder="title"></p>
-            <p><textarea name="description" placeholder="description"></textarea></p>
-            <p><select name="author">${tag}</select></p>
-            <p><input type="submit"></p>
-          </form>`
-                };
                 req.app.render('home', context, (err, html) => {
-                    if (err) throw err;
+                    if (err) {
+                        return res.status(500).send('Error rendering page.');
+                    }
                     res.end(html);
                 });
             });
         });
     },
-    //
-    // create_process: (req, res) => {
-    //     const sanitizedTitle = sanitizeHtml(req.body.title);
-    //     const sanitizedDescription = sanitizeHtml(req.body.description);
-    //     const sanitizedAuthorId = sanitizeHtml(req.body.author);  // author_id로 수정
-    //
-    //     // INSERT 쿼리로 변경
-    //     db.query(`INSERT INTO topic (title, descrpt, created, author_id) VALUES (?, ?, NOW(), ?)`,
-    //         [sanitizedTitle, sanitizedDescription, sanitizedAuthorId], (error, result) => {
-    //             if (error) {
-    //                 throw error;
-    //             }
-    //             res.redirect(`/page/${result.insertId}`);
-    //         }
-    //     );
-    // },
 
-    create_process: (req, res) => {
-        var body = '';
-        req.on('data', (data) => {
-            body += data;
-        });
-        req.on('end', () => {
-            var post = qs.parse(body);
-            var sanitizedTitle = sanitizeHtml(post.title);
-            var sanitizedDescription = sanitizeHtml(post.description);
-            var sanitizedAuthorId = sanitizeHtml(post.author);  // author_id로 수정
+    create: (req, res) => {
+        db.query('SELECT * FROM topic', (error, topics) => {
+            if (error) throw error;
 
-            // INSERT 쿼리로 변경
-            db.query(`INSERT INTO topic (title, descrpt, created, author_id) VALUES (?, ?, NOW(), ?)`,
-                [sanitizedTitle, sanitizedDescription, sanitizedAuthorId], (error, result) => {
-                    if (error) {
-                        throw error;
-                    }
-                    // res.writeHead(302, { Location: `/page/${result.insertId}` }); // 생성된 글로 리다이렉션
-                    res.redirect(`/page/${result.insertId}`);
-                    // res.end();
+            db.query('SELECT * FROM author', (err, authors) => {
+                if (err) throw err;
+
+                let tag = '';
+                authors.forEach(author => {
+                    tag += `<option value="${author.id}">${author.name}</option>`;
                 });
+
+                const context = {
+                    title: 'Create Page',
+                    list: topics,
+                    menu: '',
+                    body: `
+                        <form action="/create_process" method="post">
+                            <p><input type="text" name="title" placeholder="title"></p>
+                            <p><textarea name="description" placeholder="description"></textarea></p>
+                            <p><select name="author">${tag}</select></p>
+                            <p><input type="submit" value="Create"></p>
+                        </form>
+                    `
+                };
+
+                req.app.render('home', context, (err, html) => {
+                    if (err) {
+                        return res.status(500).send('Error rendering create page.');
+                    }
+                    res.end(html);
+                });
+            });
         });
     },
 
-    update : (req,res)=> {
-        var id = req.params.pageId;
-        db.query('select * from topic', (error, topics) => {
-            if (error) {
-                throw error
-            }
-            db.query(`select * from topic where id = ?`, [id], (error2, topic) => {
-                if (error2) {
-                    throw error2
+    create_process: (req, res) => {
+        const sanitizedTitle = sanitizeHtml(req.body.title);
+        const sanitizedDescription = sanitizeHtml(req.body.description);
+        const sanitizedAuthorId = sanitizeHtml(req.body.author);
+
+        db.query(`INSERT INTO topic (title, descrpt, created, author_id) VALUES (?, ?, NOW(), ?)`,
+            [sanitizedTitle, sanitizedDescription, sanitizedAuthorId], (error, result) => {
+                if (error) {
+                    console.error('Error inserting into topic:', error);
+                    return res.status(500).send('Internal Server Error');
                 }
-                db.query(`SELECT * FROM author`, (error3, authors) => {
-                    if (error3) {
-                        throw error3
-                    }
-                    var i = 0;
-                    var tag =
-                        '';
-                    while (i < authors.length) {
-                        var selected =
-                            '';
-                        if (authors[i].id === topic[0].author_id) {
+                res.redirect(`/page/${result.insertId}`);
+            });
+    },
+
+    update: (req, res) => {
+        const id = req.params.pageId;
+        db.query('SELECT * FROM topic', (error, topics) => {
+            if (error) throw error;
+
+            db.query('SELECT * FROM topic WHERE id = ?', [id], (error2, topic) => {
+                if (error2) throw error2;
+
+                db.query('SELECT * FROM author', (error3, authors) => {
+                    if (error3) throw error3;
+
+                    let tag = '';
+                    authors.forEach(author => {
+                        let selected = '';
+                        if (author.id === topic[0].author_id) {
                             selected = 'selected';
                         }
-                        tag += `<option value="${authors[i].id}" ${selected}>${authors[i].name}</option>`;
-                        i++;
-                    }
-                    var m = `<a href="/create">create</a>&nbsp;&nbsp;<a href="/update/${topic[0].id}">update</a>`
-                    var b = `<form action="/update_process" method="post">
-<input type="hidden" name="id" value="${id}">
-<p><input type="text" name="title" placeholder="title" value="${topic[0].title}"></p>
-<p><textarea name="description" placeholder="description">${topic[0].descrpt}</textarea></p>
-<p><select name="author">
-${tag}
-</select></p>
-<p><input type="submit"></p>
-</form>`
-                    var context = {
+                        tag += `<option value="${author.id}" ${selected}>${author.name}</option>`;
+                    });
+
+                    const main = `<a href="/create">create</a>&nbsp;&nbsp;<a href="/update/${topic[0].id}">update</a>`;
+                    const body = `<form action="/update_process" method="post">
+                        <input type="hidden" name="id" value="${id}">
+                        <p><input type="text" name="title" placeholder="title" value="${topic[0].title}"></p>
+                        <p><textarea name="description" placeholder="description">${topic[0].descrpt}</textarea></p>
+                        <p><select name="author">${tag}</select></p>
+                        <p><input type="submit"></p>
+                    </form>`;
+
+                    const context = {
+                        title: 'Update Page',
                         list: topics,
-                        menu: m,
-                        body: b
+                        menu: main,
+                        body: body
                     };
+
                     res.render('home', context, (err, html) => {
-                        res.end(html)
+                        if (err) {
+                            return res.status(500).send('Error rendering update page.');
+                        }
+                        res.end(html);
                     });
                 });
             });
         });
     },
 
+    update_process: (req, res) => {
+        const sanitizedTitle = sanitizeHtml(req.body.title);
+        const sanitizedDescription = sanitizeHtml(req.body.description);
+        const sanitizedAuthorId = sanitizeHtml(req.body.author);
+        const id = req.body.id;
 
-    update_process : (req,res)=>{
-        var body =
-            '';
-        req.on('data', (data)=>{
-            body += data;
-        });
-        req.on('end',()=>{
-            var post = qs.parse(body);
-            var sanitizedTitle = sanitizeHtml(post.title);
-            var sanitizedDescription = sanitizeHtml(post.description)
-            var sanitizedAuthor = sanitizeHtml(post.author) //추가
-            db.query(`update topic set title = ?, descrpt = ?, author_id = ? where id = ?`,
-                [sanitizedTitle, sanitizedDescription, sanitizedAuthor, post.id],(error, result)=>{
-                    if(error){ throw error }
-                    res.writeHead(302, {Location: `/page/${post.id}`}); // redirection
-                    res.end();
+        db.query(`UPDATE topic SET title = ?, descrpt = ?, author_id = ? WHERE id = ?`,
+            [sanitizedTitle, sanitizedDescription, sanitizedAuthorId, id], (error, result) => {
+                if (error) {
+                    console.error('Error updating topic:', error);
+                    return res.status(500).send('Internal Server Error');
+                }
+                res.redirect(`/page/${id}`);
             });
-        })
     },
 
     delete_process: (req, res) => {
-        const id = req.params.pageId;
+        const id = req.params.pageId;  // GET 방식으로 전달된 pageId 사용
         db.query('DELETE FROM topic WHERE id = ?', [id], (error, result) => {
-            if (error) throw error;
+            if (error) {
+                console.error('Error deleting topic:', error);
+                return res.status(500).send('Internal Server Error');
+            }
             res.redirect('/');
         });
     }

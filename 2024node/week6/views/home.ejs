@@ -6,12 +6,15 @@
 </head>
 <body>
 
-<h1><a href="/">WEB TOPIC 타이틀</a></h1>
+<h1><a href="/"><%=title%></a></h1>
+<h3>202239895 : 손수민</h3>
 <a href="/author">author</a>
-<ol>
-    <% for (var i = 0; i < list.length; i++) { %>
-        <li><a href="/page/<%= list[i].id %>"><%= list[i].title %></a></li>
-    <% } %>
+<ol type="1">
+    <% var i =0
+    while (i < list.length)
+    { %>
+    <li><a href="/page/<%=list[i].id%>"><%=list[i].title%></a> </li>
+    <% i += 1}%>
 </ol>
 <%- menu %>
 <%- body %>

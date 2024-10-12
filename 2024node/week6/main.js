@@ -2,22 +2,16 @@ const express = require('express');
 const app = express();
 const topic = require('./lib/topic');// topic.js
 const author = require('./lib/author');
-// const bodyParser = require('body-parser');
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
+app.use(express.urlencoded({ extended: true }));
 
-// app.use(express.urlencoded({ extended: false}));
-// app.use(express.json);
-// app.use(bodyParser.urlencoded({ extended: false }));
-
-// Root page - List topics
 app.get('/', (req, res) => {
     topic.home(req, res);
 });
 
-// Page details (show)
 app.get('/page/:pageId', (req, res) => {
     topic.page(req, res);
 });
@@ -56,7 +50,7 @@ app.post('/author/create_process', (req, res) => {
     author.create_process(req, res);
 })
 
-app.get('/author/update', (req, res) => {
+app.get('/author/update/:authorId', (req, res) => {
     author.update(req, res);
 })
 
@@ -64,7 +58,7 @@ app.post('/author/update_process', (req, res) => {
     author.update_process(req, res);
 })
 
-app.get('/author/delete', (req, res) => {
+app.get('/author/delete/:authorId', (req, res) => {
     author.delete_process(req, res);
 })
 app.listen(3000, () => console.log('App is listening on port 3000'));

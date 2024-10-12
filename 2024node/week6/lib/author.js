@@ -1,4 +1,4 @@
-const db = require('./db'); // db 설정을 가져옵니다.
+const db = require('./db'); // DB 설정을 가져옵니다.
 var sanitizeHtml = require('sanitize-html'); // 입력값을 안전하게 처리하는 모듈
 
 module.exports = {
@@ -27,8 +27,9 @@ module.exports = {
                 </form>`;
 
                 var context = {
+                    title: 'Home',
                     list: topics,
-                    menu: tag, // 저자 목록을 메뉴처럼 표시
+                    menu: tag,
                     body: b
                 };
                 res.render('home', context, (err, html) => res.end(html));
@@ -36,26 +37,58 @@ module.exports = {
         });
     },
 
-    // Create process 메서드
     create_process: (req, res) => {
-        var qs = require('querystring'); // 데이터를 파싱하기 위해 querystring 모듈 사용
-        var body = '';
+        const sanitizedName = sanitizeHtml(req.body.name);
+        const sanitizedProfile = sanitizeHtml(req.body.profile);
 
-        req.on('data', (data) => {
-            body += data;
+        db.query(`INSERT INTO author (name, profile) VALUES (?, ?)`,
+            [sanitizedName, sanitizedProfile], (error, result) => {
+                if (error) throw error;
+                res.redirect('/author');
+            });
+    },
+
+    update: (req, res) => {
+        const id = req.params.authorId;  // 수정된 부분: authorId 사용
+        db.query('SELECT * FROM author WHERE id = ?', [id], (error, author) => {
+            if (error) throw error;
+
+            const b = `
+                <form action="/author/update_process" method="post">
+                    <input type="hidden" name="id" value="${id}">
+                    <p><input type="text" name="name" placeholder="name" value="${sanitizeHtml(author[0].name)}"></p>
+                    <p><input type="text" name="profile" placeholder="profile" value="${sanitizeHtml(author[0].profile)}"></p>
+                    <p><input type="submit"></p>
+                </form>`;
+
+            var context = {
+                title: 'Update Author',
+                list: [], // 필요한 경우 변경 가능
+                menu: '', // 필요한 경우 변경 가능
+                body: b
+            };
+            res.render('home', context, (err, html) => {
+                res.end(html);
+            });
         });
+    },
 
-        req.on('end', () => {
-            var post = qs.parse(body);
-            var sanitizedName = sanitizeHtml(post.name);
-            var sanitizedProfile = sanitizeHtml(post.profile);
+    update_process: (req, res) => {
+        const sanitizedName = sanitizeHtml(req.body.name);
+        const sanitizedProfile = sanitizeHtml(req.body.profile);
 
-            // 데이터베이스에 새로운 저자 삽입
-            db.query(`INSERT INTO author (name, profile) VALUES (?, ?)`,
-                [sanitizedName, sanitizedProfile], (error, result) => {
-                    if (error) throw error;
-                    res.redirect('/author'); // 완료 후 author 페이지로 리다이렉트
-                });
+        db.query(`UPDATE author SET name = ?, profile = ? WHERE id = ?`,
+            [sanitizedName, sanitizedProfile, req.body.id], (error, result) => {
+                if (error) throw error;
+                res.redirect('/author'); // 완료 후 author 페이지로 리다이렉트
+            });
+    },
+
+    delete_process: (req, res) => {
+        const id = req.params.authorId;  // 수정된 부분: authorId 사용
+        db.query('DELETE FROM author WHERE id = ?', [id], (error, result) => {
+            if (error) throw error;
+            res.redirect('/author'); // 삭제 후 author 페이지로 리다이렉트
         });
     }
 };
