@@ -1,21 +1,15 @@
-var http = require('http');
-var fs = require('fs');
-var urlm = require('url');
-var app = http.createServer(function (req, res) {
-    var url = req.url;
-    var queryData = urlm.parse(url, true).query;
-    console.log(queryData.id);
-    var title = queryData.id;
-    console.log(url);
-    if (url = "/") {
-        title = 'welcome';
-    }
-    if (url = "/favicon.ico") {
-        return res.writeHead(404);
-    }
+const express = require('express');
+const {engine} = require("express/lib/application");
+const app = express();
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
 
-    res.writeHead(200);
-
-    var template = fs.readFileSync(__dirname + url);
-});
-app.listen(3000);
+app.get('/' , (req, res) => {
+    var context = {
+        title: 'Welcome'
+    };
+    res.render('home', context, (err,html) => {
+        res.end(html)
+    })
+})
+app.get('/:id', (req, res) => {})
