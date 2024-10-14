@@ -7,12 +7,8 @@ var app = http.createServer(function (req, res) {
     console.log(_url);
     console.log(queryData);
 
-    console.log(__dirname);
     if (req.url == '/') {
         _url = "/index.html";
-    }
-    if (req.url == '/main') {
-        _url = "/main.html";
     }
     if (req.url == '/favicon.ico') {
         return res.writeHead(404);
