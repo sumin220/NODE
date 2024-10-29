@@ -1,22 +1,15 @@
 const db = require('./db');
 const qs = require('querystring');
 const sanitizeHtml = require('sanitize-html');
-const cookie = require('cookie');
+// const cookie = require('cookie');
 
 function authIsOwner(req, res) {
-    var isOwner = false;
-    var cookies = {};
-
-    if (req.headers.cookie) {
-        cookies = cookie.parse(req.headers.cookie);
+    if (req.session.is_logined) {
+        return true;
+    } else {
+        return false;
     }
-
-    if (cookies.email === 'bhwang99@gachon.ac.kr' && cookies.password === '123456') {
-        isOwner = true;
-    }
-
-    return isOwner;
-};
+}
 
 function authStatusUI(req, res) {
     var login = '<a href="/login">login</a>';
@@ -45,28 +38,27 @@ function authIsLogin(req, res) {
 
 module.exports = {
     home: (req, res) => {
-        db.query(
-            'SELECT * FROM topic',
-            (err, topics) => {
-                if (err) throw err;
+     db.query('SELECT *FROM TOPIC', (err, topics) => {
+         var login = authStatusUI(req, res)
 
-                var login = authStatusUI(req, res);
+         var m = '<a href="/create">create</a>';
+         var b = '<h2> Welcome</h2><p>Node.js Start page</p>';
 
-                const context = {
-                    login: login,
-                    title: 'HomePage',
-                    list: topics,
-                    menu: '<a href="/create">create</a>',
-                    body:
-                        `
-                    <h2>Welcome</h2>
-                    <p>Node.js Start Page</p>
-                    `,
-                };
+         if (topics.length == 0) {
+             b = '<h2> Welcome </h2><p>자료가 없으니 create 링크를 이용하여 자료를 입력하세요</p>'
+         }
 
-                res.render('home', context, (err, html) => res.end(html));
-            }
-        );
+         var context = {
+             title: "WEB Topic 테이블",
+             login: login,
+             list: topics,
+             menu: m,
+             body: b};
+         res.render('home', context, (err, html) => {
+             res.end(html);
+         });
+     });
+
     },
 
     page: (req, res) => {
@@ -319,34 +311,24 @@ module.exports = {
         );
     },
 
-    login: (req, res) => {
-        db.query(
-            'SELECT * FROM topic',
-            (err, topics) => {
-                if (err) throw err;
-
-                var login = '<a href="/login">login</a>';
-                var menu = '';
-                var body =
-                    `
-                <form action="/login_process" method="post">
-                    <p><input type="text" name="email" placeholder="email"></input></p>
-                    <p><input type="password" name="password" placeholder="password"></input></p>
-                    <p><input type="submit" value="제출"></input></p>
-                </form>
-                `;
-
-                var context = {
-                    login: login,
-                    title: 'ID/PW 입력해주세요.',
-                    list: [],
-                    menu: menu,
-                    body: body,
-                };
-
-                res.render('home', context, (err, html) => res.end(html));
-            }
-        );
+    login : (req, res) => {
+        db.query('SELECT *FROM topic', (error, topics) => {
+            var m = '<a href="/create">create</a>';
+            var b= `<form action="/login_process" method="post">
+<p><input type ="text" name="email" placeholder="email"></p>
+<p><input type ="text" name="password" placeholder="password"> </p>
+<p><input type ="submit"></p>
+</form>`
+            var context = {
+                login: `<a href="/login">login</a>`,
+                title: 'Login ID/PW 생성',
+                list: topics,
+                menu: m,
+                body: b};
+            req.app.render('home', context, (err,html) => {
+                res.end(html);
+            })
+        })
     },
 
     login_process: (req, res) => {
@@ -357,23 +339,12 @@ module.exports = {
             (data) => body += data
         );
         req.on(
-            'end',
-            () => {
+            'end', () => {
                 var post = qs.parse(body);
 
                 if (post.email === 'bhwang99@gachon.ac.kr' && post.password === '123456') {
-                    res.writeHead(
-                        302,
-                        {
-                            'set-cookie': [
-                                `email = ${post.email}`,
-                                `password=${post.password}`,
-                                `nickname='egoing'`
-                            ],
-                            Location: '/'
-                        }
-                    );
-                    res.end();
+                    req.session.is_logined = true;
+                    res.redirect('/');
                 } else {
                     res.end('who?');
                 }
@@ -381,18 +352,8 @@ module.exports = {
         );
     },
 
-    logout_process: (req, res) => {
-        res.writeHead(
-            302,
-            {
-                'set-cookie': [
-                    `email=;Max-Age=0`,
-                    `password=;Max-Age=0`,
-                    `nickname=;Max-Age=0`
-                ],
-                Location: '/'
-            }
-        );
-        res.end();
-    }
+   logout_process : (req, res) => {
+    req.session.destroy((err) => {
+        res.redirect('/');
+    })}
 }
