@@ -11,10 +11,10 @@ var options = {
 const bodyParser = require("body-parser");
 
 const rootRouter = require('./router/rootRouter');
-// const productRouter = require('./router/productRouter');
+const productRouter = require('./router/productRouter');
 const authRouter = require('./router/authRouter');
 const codeRouter = require('./router/codeRouter');
-// var personRouter = require('./router/personRouter');
+var personRouter = require('./router/personRouter');
 
 const app = express();
 
@@ -35,8 +35,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/', rootRouter);
 app.use('/auth', authRouter);
 app.use('/code', codeRouter);
-// app.use('/product', productRouter);
-// app.use('/person', personRouter);
+app.use('/product', productRouter);
+app.use('/person', personRouter);
 
 app.get('/favicon.ico', (req, res) => res.writeHead(404));
 

@@ -1,27 +1,31 @@
-<table class="table table-bordered " style="text-align: center;">
-    <thead class="table-primary "><th>상품</th><th>상품명</th><th>가격</th><th>브랜드</th>
-        
-        
-        <th colspan="2"></th>  
-
-    </thead> 
-    
-    <tr ><td><a href="#" style="text-decoration: none;"><img src="#" style="width:100px;height:100px; "></a></td>
-        <td></td>
-        <td> </td>
-        <td> </td>
-
-
-        
-        <td><a href="#">수정</a></td>
-        <td><a href="#" onclick="if(confirm('정말로 삭제하시겠습니까?')==false) return false">삭제</a></td>
-
+<table class="table table-bordered" style="text-align: center;">
+    <thead class="table-primary">
+    <tr>
+        <th>상품 이미지</th>
+        <th>상품명</th>
+        <th>가격</th>
+        <th>브랜드</th>
+        <th colspan="2">관리</th>
     </tr>
-    
+    </thead>
+    <tbody>
+    <% if (products.length > 0) { %>
+        <% products.forEach(product => { %>
+            <tr>
+                <td><a href="#"><img src="<%= product.image %>" style="width:100px;height:100px;"></a></td>
+                <td><%= product.name %></td>
+                <td><%= product.price %>원</td>
+                <td><%= product.brand %></td>
+                <td><a href="/product/update/<%= product.mer_id %>">수정</a></td>
+                <td><a href="/product/delete/<%= product.mer_id %>" onclick="return confirm('정말로 삭제하시겠습니까?')">삭제</a></td>
+            </tr>
+        <% }) %>
+    <% } else { %>
+        <tr>
+            <td colspan="6">자료가 없으니 상품 추가 버튼으로 제품을 추가해 주십시오.</td>
+        </tr>
+    <% } %>
+    </tbody>
 </table>
 
-
-    <p>자료가 없으니 상품 추가 버튼으로 코드를 추가해 주십시오. </p>
-  
-    <a href="/product/create"><button class="btn btn-outline-secondary btn-sm" type="submit">상품 추가</button></a>  
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+<a href="/product/create"><button class="btn btn-outline-secondary btn-sm" type="button">상품 추가</button></a>

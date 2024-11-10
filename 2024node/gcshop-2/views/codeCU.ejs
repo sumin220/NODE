@@ -30,9 +30,15 @@
 		</div>
 
 		<% if(isUpdate) { %>
+			<input type="hidden" name="start" value="<%= code.start %>" />
 			<div class="mb-3">
 				<label class="form-label" for="start">시작일</label>
-				<input class="form-control" type="text" name="start" value="<%= code ? code.start : '' %>" placeholder="예: 20240101" required style="width:300px;" disabled />
+				<input class="form-control" type="text" value="<%= code.start %>" disabled style="width:300px;" />
+			</div>
+		<% } else { %>
+			<div class="mb-3">
+				<label class="form-label" for="start">시작일</label>
+				<input class="form-control" type="text" name="start" placeholder="예: 20240101" required style="width:300px;" />
 			</div>
 		<% } %>
 

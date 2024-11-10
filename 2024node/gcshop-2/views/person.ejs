@@ -1,0 +1,37 @@
+<table class="table table-bordered" style="text-align: center;">
+    <thead class="table-primary">
+    <tr>
+        <th>ID</th><th>PW</th><th>이름</th><th>주소</th><th>전화번호</th><th>생일</th><th>클래스</th><th>등급</th>
+        <th colspan="2">관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% if (persons && persons.length > 0) { %>
+        <% persons.forEach(person => { %>
+            <tr>
+                <td><%= person.loginid %></td>
+                <td><%= person.password %></td>
+                <td><%= person.name %></td>
+                <td><%= person.address %></td>
+                <td><%= person.tel %></td>
+                <td><%= person.birth %></td>
+                <td>
+                    <% if (person.class === 'CST') { %> CST(고객)
+                    <% } else if (person.class === 'CEO') { %> CEO(경영자)
+                    <% } else if (person.class === 'MNG') { %> MNG(관리자)
+                    <% } %>
+                </td>
+                <td><%= person.grade %></td>
+                <td>
+                    <a href="/person/update/<%= person.loginid %>">수정</a> </td>
+                <td>
+                    <a href="/person/delete/<%= person.loginid %>" onclick="return confirm('정말로 삭제하시겠습니까?')">삭제</a>
+                </td>
+            </tr>
+        <% }) %>
+    <% } else { %>
+        <tr><td colspan="9">자료가 없습니다. 고객을 추가해 주세요.</td></tr>
+    <% } %>
+    </tbody>
+</table>
+<a href="/person/create"><button class="btn btn-outline-secondary btn-sm" type="button">고객 추가</button></a>

@@ -94,7 +94,7 @@
                      <li><a href="#">Table Create</a></li>
                      <li><a href="/code/view">Code CRUD</a></li>
                      <li><a href="/product/view">Product CRUD</a></li>
-                     <li><a href="#">Person CRUD</a></li>
+                     <li><a href="/person/view">Person CRUD</a></li>
                   </ul>
                </li>
             <% } %>
@@ -137,8 +137,19 @@
                      <img src="/image/guest.jpg" alt="profile">
                   </div>
                   <div class="name-job">
-                     <div class="profile_name"><%= login ? "" : "Guest" %></div>
-                     <div class="job"><%= login ? "관리자" : "" %></div>
+                     <div class="profile_name">
+                        <% if (login) { %>
+                           <% if (cls === 'CST') { %>
+                              고객
+                           <% } else if (cls === 'MNG') { %>
+                              관리자
+                           <% } else if (cls === 'CEO') { %>
+                              사장
+                           <% } %>
+                        <% } else { %>
+                           Guest
+                        <% } %>
+                     </div>
                   </div>
 
                   <% if (login) { %>
