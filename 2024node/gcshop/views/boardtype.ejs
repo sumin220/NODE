@@ -1,10 +1,10 @@
 <% if(boardType.length === 0){ %>
     <p>자료가 없으니 게시판 종류 추가 버튼으로 코드를 추가해 주십시오. </p>
 <%}else{%>
-<table class="table table-bordered border-primary table-hover" style="text-align: center;">
-    <thead class="table-primary "><th>제목</th><th>페이지당 글 수</th><th>설명</th><th>일반 사용자 쓰기</th><th>댓글</th><th colspan="2"></th></thead>
+    <table class="table table-bordered border-primary table-hover" style="text-align: center;">
+        <thead class="table-primary "><th>제목</th><th>페이지당 글 수</th><th>설명</th><th>일반 사용자 쓰기</th><th>댓글</th><th colspan="2"></th></thead>
 
-    <%for (var i = 0; i< boardType.length; i++){%>
+        <%for (var i = 0; i< boardType.length; i++){%>
         <tr>
             <td><%- boardType[i].title %></td>
             <td><%= boardType[i].numPerPage %></td>
@@ -14,7 +14,7 @@
             <td><a href="/board/type/update/<%= boardType[i].type_id %>">수정</a></td>
             <td><a href="/board/type/delete/<%= boardType[i].type_id %>" onclick="if(confirm('정말로 삭제하시겠습니까?')==false) return false">삭제</a></td>
         </tr>
-    <%}%>
-</table>
+        <%}%>
+    </table>
 <%}%>
-<a href="/board/type/create"><button class="btn btn-outline-secondary btn-sm" type="submit">게시판 종류 추가</button></a>
+    <a href="/board/type/create"><button class="btn btn-outline-secondary btn-sm" type="submit">게시판 종류 추가</button></a>

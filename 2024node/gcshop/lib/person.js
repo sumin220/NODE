@@ -3,7 +3,7 @@ const sanitizeHtml = require('sanitize-html');
 const {authIsOwner} = require('./util');
 
 module.exports = {
-    view: (req,res)=>{ //person.ejs
+    view: (req,res)=>{
         const {name, login, cls} = authIsOwner(req);
         const sql1 = `select * from boardtype; `;
         const sql2 = 'select * from person;';
@@ -27,7 +27,7 @@ module.exports = {
         })
 
     },
-    create: (req,res)=>{ // personCU.ejs
+    create: (req,res)=>{
         const {name, login, cls} = authIsOwner(req);
         const sql1 = `select * from boardtype; `;
 
@@ -68,11 +68,11 @@ module.exports = {
                 res.end();
             })
     },
-    update: (req,res)=>{ // personCU.ejs
+    update: (req,res)=>{
         const {name, login, cls} = authIsOwner(req);
 
         const sql1 = `select * from boardtype; `;
-        const sql2 = `select * from person where loginid = '${req.params.loginId}';`; // 2차원배열임
+        const sql2 = `select * from person where loginid = '${req.params.loginId}';`;
 
         db.query(sql1 + sql2 ,(err,results)=>{
             if(err){

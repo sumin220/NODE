@@ -1,6 +1,39 @@
-<div class="container">	
+<div class="container">
+<!--	로그인이 안됐을때 -->
+		<%if(!login) {%>
 		<h2>회원가입</h2>
-		<form action="#" method="post" >
+		<form action="/auth/register_process" method="post" >
+			<div class="mb-3">
+				<label class="form-label" for="id">ID</label>
+				<input class="form-control" type="text" name="loginid" placeholder="아이디를 입력해 주세요" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id">PW</label>
+				<input class="form-control" type="text" name="password" placeholder="패스워드를 입력해 주세요" style = "width:300px;" />
+			</div>
+			<div class="mb-3" >
+				<label class="form-label" for="id">이름</label>
+				<input class="form-control" type="text" name="name" placeholder="이름을 입력해 주세요" value="" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id">주소</label>
+				<input class="form-control" type="text" name="address" placeholder="주소를 입력해 주세요" value="" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id">전화번호</label>
+				<input class="form-control" type="text" name="tel" placeholder="000-0000-0000" value="" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id">생일</label>
+				<input class="form-control" type="text" name="birth" placeholder="YYYYMMDD" value="" style = "width:300px;" />
+			</div>
+
+			<button class="btn btn-outline-primary btn-sm" type="submit">입력</button>
+		</form>
+		<!-- 로그인이 됐지만 관리자에서 추가했을 떄 즉 관리자에서 create	-->
+		<%}else if(login && person === null){ %>
+		<h2>관리자 기능 : 회원생성</h2>
+		<form action="/person/create_process" method="post" >
 			<div class="mb-3">
 				<label class="form-label" for="id">ID</label> 
 				<input class="form-control" type="text" name="loginid" placeholder="아이디를 입력해 주세요" style = "width:300px;" />
@@ -25,8 +58,70 @@
 				<label class="form-label" for="id">생일</label> 
 				<input class="form-control" type="text" name="birth" placeholder="YYYYMMDD" value="" style = "width:300px;" />
 			</div>
-			
+			<div class="mb-3">
+				<label class="form-label" for="id_main">CLASS </label>
+				<select name = "cls" id = "id_main">
+					<option value="CEO">경영자</option>
+					<option value="MNG">관리자</option>
+					<option value="CST">고객</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id_main">GRADE </label>
+				<select name = "grade" id = "id_main">
+					<option value="S">실버(가장 낮은 등급)</option>
+					<option value="G">골드(중간 등급)</option>
+					<option value="D">다이아몬드(가장 높은 등급)</option>
+				</select>
+			</div>
 			<button class="btn btn-outline-primary btn-sm" type="submit">입력</button>
-		</form>	
+		</form>
+		<!-- 로그인이 됐지만 관리자에서 수정했을 때 즉 관리자에서 update	-->
+		<%}else{%>
+		<h2>관리자 기능: 회원 정보 수정</h2>
+		<form action="/person/update_process" method="post" >
+			<div class="mb-3">
+				<label class="form-label" for="id">ID</label>
+				<input class="form-control" value="<%= person[0].loginid%>" type="text" name="loginid" placeholder="아이디를 입력해 주세요" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id">PW</label>
+				<input class="form-control" value="<%= person[0].password%>" type="text" name="password" placeholder="패스워드를 입력해 주세요" style = "width:300px;" />
+			</div>
+			<div class="mb-3" >
+				<label class="form-label" for="id">이름</label>
+				<input class="form-control" value="<%= person[0].name%>" type="text" name="name" placeholder="이름을 입력해 주세요" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id">주소</label>
+				<input class="form-control" value="<%= person[0].address%>" type="text" name="address" placeholder="주소를 입력해 주세요" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id">전화번호</label>
+				<input class="form-control" value="<%= person[0].tel%>" type="text" name="tel" placeholder="000-0000-0000" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id">생일</label>
+				<input class="form-control" value="<%= person[0].birth%>" type="text" name="birth" placeholder="YYYYMMDD" style = "width:300px;" />
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id_main">CLASS </label>
+				<select name = "cls" id = "id_main">
+					<option value="MNG" <%= person[0].class === 'MNG' ? 'selected' : '' %>>관리자</option>
+					<option value="CEO" <%= person[0].class === 'CEO' ? 'selected' : '' %>>경영진</option>
+					<option value="CST" <%= person[0].class === 'CST' ? 'selected' : '' %>>고객</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="id_main">GRADE </label>
+				<select name = "grade" id = "id_main">
+					<option value="S" <%= person[0].grade === 'S' ? 'selected' : '' %>>실버(가장 낮은 등급)</option>
+					<option value="G" <%= person[0].grade === 'G' ? 'selected' : '' %>>골드(중간 등급)</option>
+					<option value="D" <%= person[0].grade === 'D' ? 'selected' : '' %>>다이아몬드(가장 높은 등급)</option>
+				</select>
+			</div>
+			<button class="btn btn-outline-primary btn-sm" type="submit">입력</button>
+		</form>
+		<%}%>
 </div>
 	

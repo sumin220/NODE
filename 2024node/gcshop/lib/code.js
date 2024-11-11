@@ -1,178 +1,127 @@
 const db = require('./db');
-
-function authIsOwner(req, res) {
-    let name = 'Guest';
-    let login = false;
-    let cls = 'NON';
-    if (req.session.is_logined) {
-        name = req.session.name;
-        login = true;
-        cls = req.session.cls;
-    }
-    return { name, login, cls };
-}
+const sanitizeHtml = require('sanitize-html');
+const {authIsOwner} = require('./util');
 
 module.exports = {
-    view: (req, res) => {
-        const { name, login, cls } = authIsOwner(req, res);
+    view: (req,res)=>{
+        var {name, login, cls} = authIsOwner(req,res);
 
-        db.query('SELECT * FROM code', (error, codes) => {
-            if (error) {
-                console.error(error);
-                return res.status(500).send('서버 에러가 발생했습니다.');
+        var sql1 = 'select * from boardtype;';
+        var sql2 = ' select * from code;';
+
+        db.query(sql1 + sql2, (err,results)=>{
+            if(err){
+                throw err;
             }
 
-            const context = {
+            var context = {
                 who: name,
-                login: login,
-                cls: cls,
-                body: 'code.ejs',
-                codes: codes
+                login : login,
+                body : 'code.ejs',
+                cls : cls,
+                boardtypes: results[0],
+                codes: results[1]
             };
 
-            res.render('mainFrame', context);
+            req.app.render('mainFrame', context, (err,html)=>{
+                res.end(html);
+            })
+        })
+    },
+
+    create: (req,res)=>{
+        var {name, login, cls} = authIsOwner(req,res);
+
+        db.query(`select * from boardtype;`, (err,boardtypes)=>{
+            var context = {
+                who: name,
+                login : login,
+                body : 'codeCU.ejs',
+                cls : cls,
+                check: true,
+                boardtypes: boardtypes
+            };
+
+            req.app.render('mainFrame', context, (err,html)=>{
+                res.end(html);
+            })
+        })
+
+    },
+
+    create_process:(req,res)=>{
+        var {name, login, cls} = authIsOwner(req,res);
+        var post = req.body;
+        var sanM_id = sanitizeHtml(post.main_id);
+        var sanS_id = sanitizeHtml(post.sub_id);
+        var sanM_name = sanitizeHtml(post.main_name);
+        var sanS_name = sanitizeHtml(post.sub_name);
+        var sanStart = sanitizeHtml(post.start);
+        var sanEnd = sanitizeHtml(post.end);
+
+        db.query(`insert into code values(?,?,?,?,?,?);`,
+            [sanM_id,sanS_id,sanM_name,sanS_name,sanStart,sanEnd],(err,result)=>{
+            if(err){
+                throw err;
+            }
+            res.redirect('/code/view');
+            res.end();
         });
     },
 
-    create: (req, res) => {
-        const { name, login, cls } = authIsOwner(req, res);
-
-        const context = {
-            who: name,
-            login: login,
-            cls: cls,
-            body: 'codeCU.ejs',
-            title: '코드 등록',
-            update_hidden: '',
-            action: '/code/create_process',
-            button: `<button class="btn btn-outline-primary btn-sm" type="submit">입력</button>`,
-            code: {},
-            isUpdate: false
-        };
-
-        res.render('mainFrame', context);
-    },
-
-    create_process: (req, res) => {
-        const body = req.body;
-
-        db.query(
-            'INSERT INTO code (main_id, main_name, sub_id, sub_name, start, end) VALUES (?, ?, ?, ?, ?, ?)',
-            [
-                body.main_id,
-                body.main_name,
-                body.sub_id,
-                body.sub_name,
-                body.start,
-                body.end
-            ],
-            (error, result) => {
-                if (error) {
-                    console.error("DB Insert Error:", error);
-                    throw error;
-                }
-                res.redirect('/code/view');
-            }
-        );
-    },
-
-    update: (req, res) => {
-        const main_id = req.params.main_id;
-        const sub_id = req.params.sub_id;
-        const start = req.params.start;
-        const end = req.params.end;
-
-        db.query(
-            'SELECT * FROM code WHERE main_id = ? AND sub_id = ? AND start = ? AND end = ?',
-            [main_id, sub_id, start, end],
-            (error, codes) => {
-                if (error) {
-                    throw error;
-                }
-
-                const { name, login, cls } = authIsOwner(req, res);
-
-                const context = {
+    update : (req,res)=>{
+        var {name, login, cls} = authIsOwner(req,res);
+        var sql1 = 'select * from boardtype; ';
+        var sql2 =  `select * from code where main_id = ` + req.params.main + ';'
+        db.query(sql1 + sql2, (err,results)=>{
+                var context = {
                     who: name,
-                    login: login,
-                    cls: cls,
-                    body: 'codeCU.ejs',
-                    title: '코드 수정',
-                    update_hidden: `
-                    <input type="hidden" name="df_main_id" value="${main_id}">
-                    <input type="hidden" name="df_sub_id" value="${sub_id}">
-                    <input type="hidden" name="df_start" value="${start}">
-                    <input type="hidden" name="df_end" value="${end}">
-                `,
-                    action: '/code/update_process',
-                    button: `<button class="btn btn-outline-primary btn-sm" type="submit">수정</button>`,
-                    code: codes[0],
-                    isUpdate: true
+                    login : login,
+                    body : 'codeCU.ejs',
+                    cls : cls,
+                    check: false,
+                    boardtypes: results[0],
+                    code: results[1],
                 };
 
-                res.render('mainFrame', context);
-            }
-        );
+                req.app.render('mainFrame', context, (err,html)=>{
+                    res.end(html);
+                })
+        })
+
     },
 
-    update_process: (req, res) => {
-        const body = req.body;
-        const df_main_id = body.df_main_id;
-        const df_sub_id = body.df_sub_id;
-        const df_start = body.df_start;
-        const df_end = body.df_end;
+    update_process:(req,res)=>{
+        const post = req.body;
+        const sanMId = sanitizeHtml(post.main_id);
+        const sanSId = sanitizeHtml(post.sub_id);
+        const sanMname = sanitizeHtml(post.main_name);
+        const sanSname = sanitizeHtml(post.sub_name);
+        const sanStart = sanitizeHtml(post.startValue);
+        const sanEnd = sanitizeHtml(post.end);
 
-        console.log("Update Process Data:");
-        console.log("main_name:", body.main_name);
-        console.log("sub_name:", body.sub_name);
-        console.log("start:", body.start);
-        console.log("end:", body.end);
-        console.log("df_main_id:", df_main_id);
-        console.log("df_sub_id:", df_sub_id);
-        console.log("df_start:", df_start);
-        console.log("df_end:", df_end);
 
-        db.query(
-            'UPDATE code SET main_name = ?, sub_name = ?, start = ?, end = ? WHERE main_id = ? AND sub_id = ? AND start = ? AND end = ?',
-            [
-                body.main_name,
-                body.sub_name,
-                body.start,
-                body.end,
-                df_main_id,
-                df_sub_id,
-                df_start,
-                df_end
-            ],
-            (error, result) => {
-                if (error) {
-                    console.error("DB Update Error:", error);
-                    throw error;
-                }
-
-                console.log("Rows affected:", result.affectedRows); // 업데이트된 행 수 확인
-                res.redirect('/code/view');
+        db.query(`update code set main_id= ?, sub_id = ?, main_name = ?, sub_name = ? , end= ? 
+                where main_id = ? and sub_id = ? and start = ? ;`,
+            [sanMId, sanSId, sanMname, sanSname, sanEnd,sanMId,sanSId,sanStart], (err, result)=>{
+            if(err){
+                throw err;
             }
-        );
+            res.redirect('/code/view');
+            res.end();
+        });
     },
 
-    delete_process: (req, res) => {
-        const main_id = req.params.main_id;
-        const sub_id = req.params.sub_id;
+    delete_process: (req,res)=>{
+        const main_id = req.params.main;
+        const sub_id = req.params.sub;
         const start = req.params.start;
-        const end = req.params.end;
-
-        db.query(
-            'DELETE FROM code WHERE main_id = ? AND sub_id = ? AND start = ? AND end = ?',
-            [main_id, sub_id, start, end],
-            (error, result) => {
-                if (error) {
-                    console.error("DB Delete Error:", error);
-                    throw error;
-                }
-                res.redirect('/code/view');
+        db.query(`delete from code where main_id = ? and sub_id = ? and start = ?;`,[main_id,sub_id,start], (err,result)=>{
+            if(err){
+                throw err;
             }
-        );
+            res.redirect('/code/view');
+            res.end();
+        });
     }
-};
-
+}
