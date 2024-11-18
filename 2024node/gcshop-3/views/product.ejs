@@ -7,25 +7,27 @@
         <th>상품명</th>
         <th>가격</th>
         <th>브랜드</th>
-        <% if (routing !== "view-only") { %>
-            <th colspan="2"></th>
+        <% if (routing === "product") { %>
+            <th>수정</th>
+            <th>삭제</th>
         <% } %>
         </thead>
-        <% for (var i = 0; i < products.length; i++) { %>
+        <% for(var i = 0; i < products.length; i++) { %>
             <tr>
-                <td><a href="/image/<%= products[i].image %>" style="text-decoration: none;"><img src="/image/<%= products[i].image %>" style="width:100px;height:100px;"></a></td>
+                <td><a href="/detail/<%= products[i].mer_id %>" style="text-decoration: none;">
+                        <img src="/image/<%= products[i].image %>" style="width:100px;height:100px;">
+                    </a></td>
                 <td><%= products[i].name %></td>
                 <td><%= products[i].price %>원</td>
                 <td><%= products[i].brand %></td>
-                <% if (routing !== "view-only") { %>
+                <% if (routing === "product") { %>
                     <td><a href="/product/update/<%= products[i].mer_id %>">수정</a></td>
-                    <td><a href="/product/delete/<%= products[i].mer_id %>" onclick="if(confirm('정말로 삭제하시겠습니까?')==false) return false">삭제</a></td>
+                    <td><a href="/product/delete/<%= products[i].mer_id %>" onclick="if(confirm('정말로 삭제하시겠습니까?') === false) return false;">삭제</a></td>
                 <% } %>
             </tr>
         <% } %>
     </table>
 <% } %>
-
-<% if (routing !== "view-only") { %>
+<% if (routing === "product") { %>
     <a href="/product/create"><button class="btn btn-outline-secondary btn-sm" type="submit">상품 추가</button></a>
 <% } %>

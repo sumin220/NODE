@@ -1,0 +1,44 @@
+<div class="container">
+    <h1>장바구니 관리</h1>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>loginid</th>
+            <th>고객명</th>
+            <th>상품명</th>
+            <th>날짜</th>
+            <th>수정</th>
+            <th>삭제</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% if (cartItems && cartItems.length > 0) { %>
+            <% cartItems.forEach(function(item) { %>
+                <tr>
+                    <td><%= item.loginid %></td>
+                    <td><%= item.customer_name %></td>
+                    <td><%= item.product_name %></td>
+                    <td><%= item.formatted_date %></td>
+                    <td>
+                        <a href="/cart/update/<%= item.cart_id %>" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> 수정
+                        </a>
+                    </td>
+                    <td>
+                        <form action="/cart/delete" method="post" style="display: inline;" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                            <input type="hidden" name="cart_id" value="<%= item.cart_id %>">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash-alt"></i> 삭제
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="6" style="text-align: center;">현재 장바구니가 비어 있습니다. 고객의 장바구니 데이터를 추가하거나, 상품을 장바구니에 담아주세요.</td>
+            </tr>
+        <% } %>
+        </tbody>
+    </table>
+</div>

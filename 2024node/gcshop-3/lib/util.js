@@ -3,7 +3,7 @@ module.exports = {
         var name = 'Guest';
         var login = false;
         var cls = 'NON';
-        if(req.session.is_logined){ 
+        if(req.session.is_logined){
             name = req.session.name;
             login = true;
             cls = req.session.cls ;
@@ -34,5 +34,5 @@ module.exports = {
 
 
         return year +"." + month + "." + day + " : " + hour + "시 " + minute + "분 " + second + "초";
-}
+    }
 }

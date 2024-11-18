@@ -7,9 +7,10 @@ module.exports = {
     view: (req, res)=>{ // product.ejs
         var {name, login, cls} = authIsOwner(req,res);
         var sql1 = `select * from boardtype; `;
-        var sql2 = 'select * from product;';
+        const sql2 = ` select * from code; `;
+        var sql3 = `select * from product; `;
 
-        db.query(sql1 + sql2,(err,results)=>{
+        db.query(sql1 + sql2 + sql3,(err,results)=>{
             if(err){
                 throw err;
             }
@@ -20,7 +21,8 @@ module.exports = {
                 body: 'product.ejs',
                 cls:cls,
                 boardtypes: results[0],
-                products: results[1],
+                codes: results[1],
+                products: results[2],
                 routing: "product"
             };
 
@@ -45,6 +47,7 @@ module.exports = {
                 cls:cls,
                 boardtypes: results[0],
                 categorys: results[1],
+                codes: results[1],
                 mer : null
             }
 
@@ -53,30 +56,33 @@ module.exports = {
             })
         }) // 1.query
     },
-    create_process: (req,res) =>{
+    create_process: (req, res) => {
         const post = req.body;
-        const main_id = req.body.category.substring(0,4);
-        const sub_id = req.body.category.substring(4,8);
+        const main_id = req.body.category.substring(0, 4);
+        const sub_id = req.body.category.substring(4, 8);
         const sanName = sanitizeHtml(post.name);
         const sanPrice = sanitizeHtml(post.price);
         const sanStock = sanitizeHtml(post.stock);
         const sanBrand = sanitizeHtml(post.brand);
         const sanSupplier = sanitizeHtml(post.supplier);
         const sanImage = sanitizeHtml(post.image);
-        const sanSaleYn = sanitizeHtml(post.sale_yn);
-        const sanSalePrice = sanitizeHtml(post.sale_price);
+        const sanSaleYn = sanitizeHtml(post.sale_yn); // 'Y' or 'N'
+        const sanSalePrice = post.sale_price ? sanitizeHtml(post.sale_price) : null; // 빈 값이면 NULL
 
-        db.query(`insert into product(main_id, sub_id, name, price,stock,brand,supplier,image,sale_yn,sale_price )
-                        values(?,?,?,?,?,?,?,?,?,?);`,
-            [main_id,sub_id,sanName,sanPrice,sanStock,sanBrand,sanSupplier,sanImage,sanSaleYn,sanSalePrice],
-            (err,result)=>{
-                if(err){
-                    throw err;
+        db.query(
+            `INSERT INTO product(main_id, sub_id, name, price, stock, brand, supplier, image, sale_yn, sale_price)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+            [main_id, sub_id, sanName, sanPrice, sanStock, sanBrand, sanSupplier, sanImage, sanSaleYn, sanSalePrice],
+            (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.send(`<script>alert('상품 등록 중 오류가 발생했습니다.'); window.history.back();</script>`);
                 }
                 res.redirect('/product/view');
-                res.end();
-            })
+            }
+        );
     },
+
     update: (req,res)=>{ // productCU.ejs
         const {name, login , cls} = authIsOwner(req,res);
         const sql1 = `select * from boardtype; `;
@@ -94,6 +100,7 @@ module.exports = {
                 cls : cls,
                 boardtypes: results[0],
                 categorys: results[1],
+                codes: results[1],
                 mer: results[2],
             }
             req.app.render('mainFrame', context, (err,html)=>{
@@ -115,9 +122,9 @@ module.exports = {
         const sanSaleYn = sanitizeHtml(post.sale_yn);
         const sanSalePrice = sanitizeHtml(post.sale_price);
 
-        db.query(`update product set 
-            main_id = ?, sub_id =?, name =?, price = ?, 
-            stock = ?, brand = ?, supplier = ?, sale_yn = ?, sale_price=?, image=? where mer_id = ?`,
+        db.query(`update product set
+                                     main_id = ?, sub_id =?, name =?, price = ?,
+                                     stock = ?, brand = ?, supplier = ?, sale_yn = ?, sale_price=?, image=? where mer_id = ?`,
             [mainId,subId,sanName,sanPrice,sanStock,sanBrand,sanSupplier,sanSaleYn,sanSalePrice,sanImage,merId],
             (err, result)=>{
                 if(err){

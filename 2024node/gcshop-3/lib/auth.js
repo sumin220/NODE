@@ -7,14 +7,16 @@ const {authIsOwner} = require('./util');
 module.exports = {
     login : (req,res) =>{
         var {name, login, cls} = authIsOwner(req,res);
-
-        db.query('select * from boardtype',(err, boardtype)=>{
+        const sql1 = `select * from boardtype;`
+        const sql2 = ` select * from code;`
+        db.query(sql1 + sql2,(err, results)=>{
             var context = {
                 who: name,
                 login : login,
                 body : 'login.ejs',
                 cls : cls,
-                boardtypes: boardtype
+                boardtypes: results[0],
+                codes: results[1]
             };
 
             req.app.render('mainFrame', context, (err,html)=>{
@@ -54,20 +56,23 @@ module.exports = {
         })
     },
     signUp: (req,res)=>{
-        var {name, login, cls} = authIsOwner(req,res);
+        const {name, login, cls} = authIsOwner(req,res);
 
         if(login){
             res.redirect('/');
             return ;
         }
+        const sql1 = `select * from boardtype;`
+        const sql2 = ` select * from code;`
 
-        db.query(`select * from boardtype;`,(err, boardtype)=>{
-            var context={
+        db.query(sql1 + sql2,(err, results)=>{
+            const context={
                 who: name,
                 login: login,
                 body: 'personCU.ejs',
                 cls: cls,
-                boardtypes: boardtype
+                boardtypes: results[0],
+                codes: results[1]
             }
 
             req.app.render('mainFrame', context, (err,html)=>{
@@ -86,7 +91,7 @@ module.exports = {
         var birth = sanitizeHtml(post.birth);
 
         db.query(`
-            insert into person values(?,?,?,?,?,?,?,?);`,
+                    insert into person values(?,?,?,?,?,?,?,?);`,
             [id,pwd,name,address,tel, birth,"CST","S"],(err,result)=>{
                 if(err){
                     throw err;

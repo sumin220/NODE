@@ -1,193 +1,109 @@
 <div class="container">
     <script>
         function displayFileName() {
-            var filePath = $("#file").val();
+            var filePath = document.getElementById("file").value;
             var fileName = filePath.split('\\').pop(); // 파일 이름만 추출
-            $(".upload-name").val(fileName);
+            document.querySelector(".upload-name").value = fileName;
         }
 
         function toggleSalePrice() {
-            const isSale = document.getElementById("sale_yn_yes").checked;
-            document.getElementById("sale_price").disabled = !isSale;
-            if (!isSale) {
-                document.getElementById("sale_price").value = ""; // No 선택 시 할인가격 초기화
+            var saleYn = document.getElementById('sale_yn').value; // 할인 여부 값 가져오기
+            var salePriceInput = document.getElementById('sale_price'); // 할인 가격 입력 필드
+            if (saleYn === 'N') {
+                salePriceInput.value = ''; // No 선택 시 할인 가격 초기화
+                salePriceInput.disabled = true; // 비활성화
+            } else {
+                salePriceInput.disabled = false; // 활성화
             }
         }
-
-        window.onload = toggleSalePrice; // 페이지 로드 시 초기 상태 설정
     </script>
 
     <% if (mer === null) { %>
         <h2>상품 입력</h2>
     <form action="/product/create_process" method="post" enctype="multipart/form-data" accept-charset="UTF-8">
-        <div class="mb-3">
-            <label class="form-label" for="id_main">카테고리 </label>
-            <select name="category" id="id_main">
-                <% var i = 0;
-                        while (i < categorys.length) {
-                    var ids = categorys[i].main_id + categorys[i].sub_id; %>
-                <option value="<%= ids %>">
-                    <%= categorys[i].main_name %> : <%= categorys[i].sub_name %>
-                </option>
-                <% i += 1; } %>
-            </select>
-        </div>
-
-        <table>
-            <tr><td>
-                    <div class="mb-3">
-                        <label class="form-label" for="id">제품명</label>
-                        <input class="form-control" type="text" name="name" style="width:300px;" />
-                    </div>
-                </td>
-                <td width="30px"></td>
-                <td>
-                    <div class="mb-3">
-                        <label class="form-label" for="id">가격</label>
-                        <input class="form-control" type="text" name="price" style="width:300px;" />
-                    </div>
-                </td>
-            </tr>
-
-            <tr><td>
-                    <div class="mb-3">
-                        <label class="form-label" for="id">재고</label>
-                        <input class="form-control" type="text" name="stock" style="width:300px;" />
-                    </div>
-                </td><td width="30px"></td><td>
-                    <div class="mb-3">
-                        <label class="form-label" for="id">브랜드</label>
-                        <input class="form-control" type="text" name="brand" style="width:300px;" />
-                    </div>
-                </td>
-            </tr>
-
-            <tr><td>
-                    <div class="mb-3">
-                        <label class="form-label" for="id">공급자</label>
-                        <input class="form-control" type="text" name="supplier" style="width:300px;" />
-                    </div>
-                </td><td width="30px"></td><td>
-                    <div class="mb-3">
-                        <label class="form-label" for="sale_yn">할인 여부</label><br>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="sale_yn" id="sale_yn_yes" value="Y" onchange="toggleSalePrice()">
-                            <label class="form-check-label" for="sale_yn_yes">Yes</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="sale_yn" id="sale_yn_no" value="N" onchange="toggleSalePrice()">
-                            <label class="form-check-label" for="sale_yn_no">No</label>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    <div class="mb-3">
-                        <label class="form-label" for="sale_price">할인가격</label>
-                        <input class="form-control" type="text" name="sale_price" id="sale_price" style="width:300px;" />
-                    </div>
-                </td><td width="30px"></td>
-                <td>
-                </td>
-            </tr>
-        </table>
-
-        <div class="mb-3">
-            <input class="upload-name" value="" name="image" placeholder="이미지파일">
-            <input type="file" id="file" name="uploadFile" onchange="displayFileName()">
-        </div>
-
         <% } else { %>
             <h2>상품 수정</h2>
         <form action="/product/update_process" method="post" enctype="multipart/form-data" accept-charset="UTF-8">
+            <input type="hidden" name="merId" value="<%= mer[0].mer_id %>" />
+            <% } %>
             <div class="mb-3">
-                <label class="form-label" for="id_main">카테고리 </label>
+                <label class="form-label" for="id_main">카테고리</label>
                 <select name="category" id="id_main">
                     <% var i = 0;
                             while (i < categorys.length) {
-                        var selected = "";
                         var ids = categorys[i].main_id + categorys[i].sub_id;
-                        var ids2 = mer[0].main_id + mer[0].sub_id;
-                        if (ids === ids2) selected = 'selected'; %>
-                    <option value="<%= ids %>" <%= selected %>>
+                        var selected = mer && ids === (mer[0].main_id + mer[0].sub_id) ? 'selected' : '';
+                    %>
+                    <option value="<%= ids %>" <%= selected %> >
                         <%= categorys[i].main_name %> : <%= categorys[i].sub_name %>
                     </option>
                     <% i += 1; } %>
                 </select>
             </div>
-
-            <table>
-                <tr><td>
-                        <input class="form-control" value="<%= mer[0].mer_id %>" type="hidden" name="merId" style="width:300px;" />
+            <table style="width: 70%;">
+                <tr>
+                    <td style="width: 50%;">
                         <div class="mb-3">
-                            <label class="form-label" for="id">제품명</label>
-                            <input class="form-control" value="<%= mer[0].name %>" type="text" name="name" style="width:300px;" />
+                            <label class="form-label" for="name">제품명</label>
+                            <input class="form-control" type="text" name="name" value="<%= mer ? mer[0].name : '' %>" style="width: 95%;" />
                         </div>
                     </td>
-                    <td width="30px"></td>
+                    <td style="width: 50%;">
+                        <div class="mb-3">
+                            <label class="form-label" for="price">가격</label>
+                            <input class="form-control" type="text" name="price" value="<%= mer ? mer[0].price : '' %>" style="width: 95%;" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
                     <td>
                         <div class="mb-3">
-                            <label class="form-label" for="id">가격</label>
-                            <input class="form-control" value="<%= mer[0].price %>" type="text" name="price" style="width:300px;" />
+                            <label class="form-label" for="stock">재고</label>
+                            <input class="form-control" type="text" name="stock" value="<%= mer ? mer[0].stock : '' %>" style="width: 95%;" />
+                        </div>
+                    </td>
+                    <td>
+                        <div class="mb-3">
+                            <label class="form-label" for="brand">브랜드</label>
+                            <input class="form-control" type="text" name="brand" value="<%= mer ? mer[0].brand : '' %>" style="width: 95%;" />
                         </div>
                     </td>
                 </tr>
-
-                <tr><td>
+                <tr>
+                    <td>
                         <div class="mb-3">
-                            <label class="form-label" for="id">재고</label>
-                            <input class="form-control" value="<%= mer[0].stock %>" type="text" name="stock" style="width:300px;" />
+                            <label class="form-label" for="supplier">공급자</label>
+                            <input class="form-control" type="text" name="supplier" value="<%= mer ? mer[0].supplier : '' %>" style="width: 95%;" />
                         </div>
-                    </td><td width="30px"></td><td>
+                    </td>
+                    <td>
                         <div class="mb-3">
-                            <label class="form-label" for="id">브랜드</label>
-                            <input class="form-control" value="<%= mer[0].brand %>" type="text" name="brand" style="width:300px;" />
+                            <label class="form-label" for="sale_yn">할인여부</label>
+                            <select class="form-control" name="sale_yn" id="sale_yn" style="width: 95%;" onchange="toggleSalePrice()">
+                                <option value="Y" <%= mer && mer[0].sale_yn === 'Y' ? 'selected' : '' %>>Yes</option>
+                                <option value="N" <%= mer && mer[0].sale_yn === 'N' ? 'selected' : '' %>>No</option>
+                            </select>
                         </div>
                     </td>
                 </tr>
-
-                <tr><td>
-                        <div class="mb-3">
-                            <label class="form-label" for="id">공급자</label>
-                            <input class="form-control" value="<%= mer[0].supplier %>" type="text" name="supplier" style="width:300px;" />
-                        </div>
-                    </td><td width="30px"></td><td>
-                        <div class="mb-3">
-                            <label class="form-label" for="sale_yn">할인 여부</label><br>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="sale_yn" id="sale_yn_yes" value="Y" <% if (mer[0].sale_yn === 'Y') { %> checked <% } %> onchange="toggleSalePrice()">
-                                <label class="form-check-label" for="sale_yn_yes">Yes</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="sale_yn" id="sale_yn_no" value="N" <% if (mer[0].sale_yn === 'N') { %> checked <% } %> onchange="toggleSalePrice()">
-                                <label class="form-check-label" for="sale_yn_no">No</label>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-
                 <tr>
                     <td>
                         <div class="mb-3">
                             <label class="form-label" for="sale_price">할인가격</label>
-                            <input class="form-control" type="text" name="sale_price" id="sale_price" value="<%= mer[0].sale_price %>" style="width:300px;" />
+                            <input class="form-control" type="text" name="sale_price" id="sale_price" value="<%= mer ? mer[0].sale_price : '' %>" style="width: 95%;" <%= mer && mer[0].sale_yn === 'N' ? 'disabled' : '' %> />
                         </div>
-                    </td><td width="30px"></td>
+                    </td>
                     <td>
+                        <div class="mb-3">
+                            <label class="form-label" for="image">이미지</label>
+                            <input class="upload-name" value="<%= mer ? mer[0].image : '' %>" name="image" placeholder="이미지파일" style="width: 95%;" />
+                            <input type="file" id="file" name="uploadFile" onchange="displayFileName()" style="width: 95%;" />
+                        </div>
                     </td>
                 </tr>
             </table>
-
-            <div class="mb-3">
-                <input class="upload-name" value="<%= mer[0].image %>" name="image" placeholder="이미지파일">
-                <input type="file" id="file" name="uploadFile" onchange="displayFileName()">
-            </div>
-            <% } %>
-
-            <button class="btn btn-outline-primary btn-sm" type="submit">입력</button>
+            <button class="btn btn-outline-primary btn-sm" type="submit"><%= mer ? '수정' : '입력' %></button>
             &nbsp;&nbsp;&nbsp;
-            <a href="#"><button class="btn btn-outline-primary btn-sm" type="button">제품목록 돌아가기</button></a>
+            <a href="/product/view"><button class="btn btn-outline-primary btn-sm" type="button">제품목록 돌아가기</button></a>
         </form>
 </div>

@@ -1,14 +1,30 @@
 <table class="table table-bordered ">
-    <tr ><td rowspan = "6"><img src="" style="width:300px;height:300px; "></td>
-         <td></td></tr>
-    <tr> <td>가격 :  원</td></tr>
-    <tr> <td>브랜드 : </td></tr>
-    <tr> <td>공급업체 : </td></tr>
-    <tr><td>
-        <a href="#" ><button class="btn btn-outline-primary btn-sm" type="submit" >구매</button></a>
-        <form action = "#" method="post" style = "display : inline-block">
-            <input type="hidden" value="" name="mer_id">
-            <button class="btn btn-outline-primary btn-sm" type="submit">장바구니</button>
-        </form>
-    </td></tr>
+    <tr>
+        <td rowspan="6"><img src="/image/<%= product.image %>" style="width:300px;height:300px;"></td>
+        <td><%= product.name %></td>
+    </tr>
+    <tr>
+        <td>가격: <%= product.price %> 원</td>
+    </tr>
+    <tr>
+        <td>브랜드: <%= product.brand %></td>
+    </tr>
+    <tr>
+        <td>공급업체: <%= product.supplier %></td>
+    </tr>
+    <% if (login) { %>
+        <tr>
+            <td>
+                <!-- 동적으로 mer_id 삽입 -->
+                <a href="/purchase/detail/<%= product.mer_id %>">
+                    <button class="btn btn-outline-primary btn-sm" type="button">구매</button>
+                </a>
+                <!-- 장바구니 추가 -->
+                <form action="/cart" method="post" style="display: inline-block;">
+                    <input type="hidden" value="<%= product.mer_id %>" name="mer_id">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">장바구니</button>
+                </form>
+            </td>
+        </tr>
+    <% } %>
 </table>

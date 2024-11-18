@@ -1,100 +1,126 @@
 const db = require('./db');
-const { authIsOwner } = require('./util');
+const {authIsOwner} = require('./util');
+const { URL } = require('url');
 
 module.exports = {
     home: (req, res) => {
-        const { login, name, cls } = authIsOwner(req, res);
-        const sql1 = 'SELECT * FROM boardtype;';
-        const sql2 = 'SELECT * FROM product;';
-        const sql3 = 'SELECT * FROM code;';
+        const {login, name, cls} = authIsOwner(req, res)
+        const sql1 = 'select * from boardtype;';
+        const sql2 = ` select * from code;`
+        const sql3 = ` select * from product;`
 
-        db.query(sql1, (error, boardtypes) => {
-            if (error) throw error;
-
-            db.query(sql2, (error, products) => {
-                if (error) throw error;
-
-                db.query(sql3, (error, codes) => {
-                    if (error) throw error;
-
-                    const context = {
-                        who: name,
-                        login: login,
-                        body: 'product.ejs',
-                        cls: cls,
-                        boardtypes: boardtypes, // Ensure boardtypes is always available
-                        products: products,
-                        codes: codes,
-                        routing: 'view-only',
-                    };
-
-                    res.render('mainFrame', context);
-                });
-            });
-        });
+        db.query(sql1 + sql2 + sql3, (error, results) => {
+            if(error){
+                throw error;
+            }
+            const context = {
+                /*********** mainFrame.ejs에 필요한 변수 ***********/
+                who: name,
+                login: login,
+                body: 'product.ejs',
+                cls: cls,
+                boardtypes: results[0],
+                codes: results[1],
+                products:results[2],
+                routing: "root"
+            };
+            res.render('mainFrame', context, (err, html) => {
+                if(err)
+                    throw err;
+                res.end(html)
+            }); //render end
+        }); //query end
     },
 
-    categoryview: (req, res) => {
-        const { login, name, cls } = authIsOwner(req, res);
-        const categ = req.params.categ;
-        const main_id = categ.substring(0, 4);
-        const sub_id = categ.substring(4, 8);
+    categoryview: (req,res) =>{
+        const {login, cls, name} = authIsOwner(req,res);
+        const main_id = req.params.categ.substring(0,4);
+        const sub_id = req.params.categ.substring(4,8);
 
-        const sqlProduct = 'SELECT * FROM product WHERE main_id = ? AND sub_id = ?;';
-        const sqlCode = 'SELECT * FROM code;';
+        const sql1 = 'select * from boardtype;';
+        const sql2 = ` select * from code;`
+        const sql3 = ` select * from product where main_id = ${main_id} and sub_id = ${sub_id};`;
 
-        db.query(sqlCode, (error, codes) => {
-            if (error) throw error;
+        db.query(sql1 + sql2 + sql3, (err, results) => {
+            if(err){
+                throw err;
+            }
+            const context = {
+                who: name,
+                login: login,
+                body: 'product.ejs',
+                cls: cls,
+                boardtypes: results[0],
+                codes: results[1],
+                products:results[2],
+                routing: "root"
+            };
 
-            db.query(sqlProduct, [main_id, sub_id], (error, products) => {
-                if (error) throw error;
-
-                const context = {
-                    who: name,
-                    login: login,
-                    body: 'product.ejs',
-                    cls: cls,
-                    products: products,
-                    codes: codes, // category 페이지에서는 항상 `codes` 필요
-                    routing: 'view-only' // 'view-only' 모드로 설정하여 수정/삭제/추가 버튼 숨김
-                };
-
-                res.render('mainFrame', context);
-            });
+            res.render('mainFrame', context, (err, html) => {
+                res.end(html)
+            }); //render end
         });
+
+
     },
 
-    search: (req, res) => {
-        const { login, name, cls } = authIsOwner(req, res);
-        const searchQuery = req.body.search;
+    search: (req,res)=>{
+        const {login, cls, name} = authIsOwner(req,res);
+        const sql1 = 'select * from boardtype;';
+        const sql2 = ` select * from code;`
+        const sql3 = ` select * from product
+                            where name like '%${req.body.search}%' or
+                            brand like '%${req.body.search}%' or
+                            supplier like '%${req.body.search}%';`;
 
-        const sqlSearch = `SELECT * FROM product WHERE name LIKE ? OR brand LIKE ? OR supplier LIKE ?;`;
-        const sqlBoardtype = 'SELECT * FROM boardtype;';
-        const sqlCode = 'SELECT * FROM code;';
+        db.query(sql1 + sql2 + sql3, (err, results) => {
+            if(err){
+                throw err;
+            }
+            const context = {
+                who: name,
+                login: login,
+                body: 'product.ejs',
+                cls: cls,
+                boardtypes: results[0],
+                codes: results[1],
+                products:results[2],
+                routing: "root"
+            };
 
-        db.query(sqlBoardtype, (error, boardtypes) => {
-            if (error) throw error;
+            res.render('mainFrame', context, (err, html) => {
+                res.end(html)
+            }); //render end
+        });
+    },
+    detail :(req,res)=>{
+        const {name, login, cls} = authIsOwner(req,res);
+        const sql1 = 'select * from boardtype;';
+        const sql2 = ` select * from code;`
+        const sql3 = ` select * from product where mer_id = ${req.params.merId};`
 
-            db.query(sqlCode, (error, codes) => {
-                if (error) throw error;
+        db.query(sql1 + sql2 + sql3, (error, results) => {
+            if(error){
+                throw error;
+            }
 
-                db.query(sqlSearch, [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`], (error, products) => {
-                    if (error) throw error;
+            const context = {
+                /*********** mainFrame.ejs에 필요한 변수 ***********/
+                who: name,
+                login: login,
+                body: 'productDetail.ejs',
+                cls: cls,
+                boardtypes: results[0],
+                codes: results[1],
+                product:results[2][0],
+                routing: "root"
+            };
 
-                    const context = {
-                        who: name,
-                        login: login,
-                        body: 'product.ejs',
-                        cls: cls,
-                        boardtypes: boardtypes,
-                        products: products,
-                        codes: codes,
-                        routing: 'view-only',
-                    };
-
-                    res.render('mainFrame', context);
-                });
-            });
+            res.render('mainFrame', context, (err, html) => {
+                if(err)
+                    throw err;
+                res.end(html)
+            }); //render end
         });
     }
-};
+}

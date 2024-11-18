@@ -3,7 +3,7 @@ const sanitizeHtml = require('sanitize-html');
 const {authIsOwner} = require('./util');
 
 module.exports = {
-    view: (req,res)=>{
+    view: (req,res)=>{ // code.ejs
         var {name, login, cls} = authIsOwner(req,res);
 
         var sql1 = 'select * from boardtype;';
@@ -29,17 +29,19 @@ module.exports = {
         })
     },
 
-    create: (req,res)=>{
+    create: (req,res)=>{ // codeCU.ejs
         var {name, login, cls} = authIsOwner(req,res);
-
-        db.query(`select * from boardtype;`, (err,boardtypes)=>{
+        const sql1 = `select * from boardtype; `
+        const sql2 = ` select * from code; `
+        db.query(sql1 + sql2, (err,results)=>{
             var context = {
                 who: name,
                 login : login,
                 body : 'codeCU.ejs',
                 cls : cls,
-                check: true,
-                boardtypes: boardtypes
+                check: true, // 입력인지 수정인지 확인
+                boardtypes: results[0],
+                codes: results[1]
             };
 
             req.app.render('mainFrame', context, (err,html)=>{
@@ -50,7 +52,6 @@ module.exports = {
     },
 
     create_process:(req,res)=>{
-        var {name, login, cls} = authIsOwner(req,res);
         var post = req.body;
         var sanM_id = sanitizeHtml(post.main_id);
         var sanS_id = sanitizeHtml(post.sub_id);
@@ -61,32 +62,34 @@ module.exports = {
 
         db.query(`insert into code values(?,?,?,?,?,?);`,
             [sanM_id,sanS_id,sanM_name,sanS_name,sanStart,sanEnd],(err,result)=>{
-            if(err){
-                throw err;
-            }
-            res.redirect('/code/view');
-            res.end();
-        });
+                if(err){
+                    throw err;
+                }
+                res.redirect('/code/view');
+                res.end();
+            });
     },
 
-    update : (req,res)=>{
+    update : (req,res)=>{ // codeCU.ejs
         var {name, login, cls} = authIsOwner(req,res);
         var sql1 = 'select * from boardtype; ';
-        var sql2 =  `select * from code where main_id = ` + req.params.main + ';'
-        db.query(sql1 + sql2, (err,results)=>{
-                var context = {
-                    who: name,
-                    login : login,
-                    body : 'codeCU.ejs',
-                    cls : cls,
-                    check: false,
-                    boardtypes: results[0],
-                    code: results[1],
-                };
+        const sql2 = ` select * from code; `
+        var sql3 =  `select * from code where main_id = ` + req.params.main + ';'
+        db.query(sql1 + sql2 + sql3, (err,results)=>{
+            var context = {
+                who: name,
+                login : login,
+                body : 'codeCU.ejs',
+                cls : cls,
+                check: false, // 생성(true)인지 수정(false)인지 확인
+                boardtypes: results[0],
+                codes: results[1],
+                code: results[2],
+            };
 
-                req.app.render('mainFrame', context, (err,html)=>{
-                    res.end(html);
-                })
+            req.app.render('mainFrame', context, (err,html)=>{
+                res.end(html);
+            })
         })
 
     },
@@ -101,15 +104,15 @@ module.exports = {
         const sanEnd = sanitizeHtml(post.end);
 
 
-        db.query(`update code set main_id= ?, sub_id = ?, main_name = ?, sub_name = ? , end= ? 
-                where main_id = ? and sub_id = ? and start = ? ;`,
+        db.query(`update code set main_id= ?, sub_id = ?, main_name = ?, sub_name = ? , end= ?
+                  where main_id = ? and sub_id = ? and start = ? ;`,
             [sanMId, sanSId, sanMname, sanSname, sanEnd,sanMId,sanSId,sanStart], (err, result)=>{
-            if(err){
-                throw err;
-            }
-            res.redirect('/code/view');
-            res.end();
-        });
+                if(err){
+                    throw err;
+                }
+                res.redirect('/code/view');
+                res.end();
+            }); // 첫번째 쿼리
     },
 
     delete_process: (req,res)=>{
@@ -122,6 +125,6 @@ module.exports = {
             }
             res.redirect('/code/view');
             res.end();
-        });
+        }); // 첫번쨰 쿼리
     }
 }

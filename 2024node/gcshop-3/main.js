@@ -34,6 +34,8 @@ const codeRouter = require('./router/codeRouter');
 const productRouter = require('./router/productRouter');
 const personRouter = require('./router/personRouter');
 const boardRouter = require('./router/boardRouter');
+const purchaseRouter = require('./router/purchaseRouter');
+const cartRouter = require('./router/cartRouter');
 
 
 app.use('/', rootRouter);
@@ -42,6 +44,9 @@ app.use('/code', codeRouter);
 app.use('/product', productRouter);
 app.use('/person', personRouter);
 app.use('/board', boardRouter);
+app.use('/purchase', purchaseRouter);
+app.use('/cart', cartRouter);
+
 
 app.use(express.static('public'));
 
