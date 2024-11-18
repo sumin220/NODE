@@ -181,4 +181,177 @@ module.exports = {
             });
         });
     },
+
+    viewPurchases: (req, res) => {
+        const { name, login, cls } = authIsOwner(req, res);
+
+        const sql1 = `SELECT * FROM boardtype;`;
+        const sql2 = `SELECT * FROM code;`;
+        const sql3 = `
+            SELECT p.purchase_id, p.loginid, per.name AS customer_name,
+                   p.mer_id, pr.name AS product_name,
+                   p.date, p.price, p.point, p.qty, p.total,
+                   p.payYN, p.cancel, p.refund
+            FROM purchase p
+                     INNER JOIN person per ON p.loginid = per.loginid
+                     INNER JOIN product pr ON p.mer_id = pr.mer_id;
+        `;
+
+        db.query(sql1 + sql2 + sql3, (err, results) => {
+            if (err) {
+                console.error("구매 내역 조회 오류:", err);
+                return res.send(`<script>alert('구매 내역 조회 중 오류가 발생했습니다.'); window.history.back();</script>`);
+            }
+
+            const context = {
+                who: name,
+                login: login,
+                cls: cls,
+                body: 'purchaseView.ejs',
+                boardtypes: results[0], // boardtype 데이터
+                codes: results[1], // code 데이터
+                purchaseItems: results[2], // purchase 데이터
+            };
+
+            res.render("mainFrame", context, (err, html) => {
+                if (err) throw err;
+                res.end(html);
+            });
+        });
+    },
+
+    getUpdatePurchase: (req, res) => {
+        const { name, login, cls } = authIsOwner(req, res);
+        const purchaseId = req.params.purchase_id;
+
+        const sql1 = `SELECT * FROM boardtype;`;
+        const sql2 = `SELECT * FROM code;`;
+        const purchaseQuery = `
+            SELECT p.*, per.name AS customer_name, pr.name AS product_name
+            FROM purchase p
+                     INNER JOIN person per ON p.loginid = per.loginid
+                     INNER JOIN product pr ON p.mer_id = pr.mer_id
+            WHERE p.purchase_id = ?;
+        `;
+        const customersQuery = `SELECT loginid, name FROM person;`;
+        const productsQuery = `SELECT mer_id, name FROM product;`;
+
+        db.query(sql1 + sql2, (err, results) => {
+            if (err) {
+                console.error("데이터 가져오기 오류:", err);
+                return res.send(`<script>alert('데이터를 가져오는 중 오류가 발생했습니다.'); window.history.back();</script>`);
+            }
+
+            db.query(purchaseQuery, [purchaseId], (err, purchaseResult) => {
+                if (err) {
+                    console.error("구매 데이터 가져오기 오류:", err);
+                    return res.send(`<script>alert('구매 데이터를 가져오는 중 오류가 발생했습니다.'); window.history.back();</script>`);
+                }
+
+                db.query(customersQuery, (err, customers) => {
+                    if (err) {
+                        console.error("고객 데이터 가져오기 오류:", err);
+                        return res.send(`<script>alert('고객 데이터를 가져오는 중 오류가 발생했습니다.'); window.history.back();</script>`);
+                    }
+
+                    db.query(productsQuery, (err, products) => {
+                        if (err) {
+                            console.error("상품 데이터 가져오기 오류:", err);
+                            return res.send(`<script>alert('상품 데이터를 가져오는 중 오류가 발생했습니다.'); window.history.back();</script>`);
+                        }
+
+                        const context = {
+                            who: name,
+                            login: login,
+                            cls: cls,
+                            body: 'purchaseU.ejs',
+                            boardtypes: results[0], // boardtype 데이터
+                            codes: results[1], // code 데이터
+                            purchaseItem: purchaseResult[0], // purchase 데이터
+                            customers: customers, // person 데이터
+                            products: products, // product 데이터
+                        };
+
+                        res.render("mainFrame", context, (err, html) => {
+                            if (err) throw err;
+                            res.end(html);
+                        });
+                    });
+                });
+            });
+        });
+    },
+
+    postUpdatePurchase: (req, res) => {
+        const {
+            purchase_id,
+            price,
+            point,
+            qty,
+            total,
+            payYN,
+            cancel,
+            refund,
+        } = req.body;
+
+        // 기본값 설정
+        const qtyValue = qty || 1; // 기본값: 1
+        const totalValue = total || price * qtyValue; // 기본값: 가격 * 수량
+
+        const updateQuery = `
+        UPDATE purchase
+        SET price = ?, point = ?, qty = ?, total = ?, payYN = ?, cancel = ?, refund = ?
+        WHERE purchase_id = ?;
+    `;
+        const updateValues = [price, point, qtyValue, totalValue, payYN, cancel, refund, purchase_id];
+
+        console.log('업데이트 쿼리:', updateQuery);
+        console.log('업데이트 값:', updateValues);
+
+        db.query(updateQuery, updateValues, (err) => {
+            if (err) {
+                console.error('구매 내역 수정 오류:', err);
+                return res.send(`<script>
+                alert('구매 내역 수정 중 오류가 발생했습니다.');
+                window.history.back();
+            </script>`);
+            }
+
+            // 업데이트 후 데이터 확인
+            const checkQuery = 'SELECT * FROM purchase WHERE purchase_id = ?';
+            db.query(checkQuery, [purchase_id], (err, result) => {
+                if (err) {
+                    console.error('업데이트 확인 쿼리 오류:', err);
+                    return res.send(`<script>
+                    alert('업데이트 확인 중 오류가 발생했습니다.');
+                    window.history.back();
+                </script>`);
+                }
+                console.log('업데이트된 데이터:', result);
+
+                res.send(`<script>
+                alert('구매 내역이 성공적으로 수정되었습니다.');
+                window.location.href = '/purchase/view';
+            </script>`);
+            });
+        });
+    },
+
+    deletePurchase: (req, res) => {
+        const { purchase_id } = req.body;
+
+        const deleteQuery = `
+            DELETE FROM purchase
+            WHERE purchase_id = ?;
+        `;
+
+        db.query(deleteQuery, [purchase_id], (err) => {
+            if (err) {
+                console.error("구매 내역 삭제 오류:", err);
+                return res.send(`<script>alert('구매 내역 삭제 중 오류가 발생했습니다.'); window.history.back();</script>`);
+            }
+
+            res.send(`<script>alert('구매 내역이 삭제되었습니다.'); window.location.href = '/purchase/view';</script>`);
+        });
+    }
 };

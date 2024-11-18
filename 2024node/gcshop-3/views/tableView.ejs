@@ -1,0 +1,35 @@
+<div class="container">
+    <h1><%= tableName %> 자료 목록</h1>
+    <table class="table table-bordered text-center">
+        <thead>
+        <tr>
+            <% columns.forEach(function(column) { %>
+                <th><%= column.COLUMN_COMMENT || column.COLUMN_NAME %></th>
+            <% }); %>
+            <th>생성</th>
+            <th>수정</th>
+            <th>삭제</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% rows.forEach(function(row) { %>
+            <tr>
+                <% columns.forEach(function(column) { %>
+                    <td><%= row[column.COLUMN_NAME] %></td>
+                <% }); %>
+                <td>
+                    <a href="/table/create/<%= tableName %>" class="btn btn-success">생성</a>
+                </td>
+                <td>
+                    <a href="/table/update/<%= tableName %>/<%= row.id %>" class="btn btn-primary">수정</a>
+                </td>
+                <td>
+                    <form action="/table/delete/<%= tableName %>/<%= row.id %>" method="post">
+                        <button type="submit" class="btn btn-danger">삭제</button>
+                    </form>
+                </td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+</div>

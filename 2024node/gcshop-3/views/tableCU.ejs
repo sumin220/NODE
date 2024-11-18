@@ -1,0 +1,16 @@
+<!-- tableCU.ejs -->
+<div class="container">
+    <h1><%= row ? '데이터 수정' : '데이터 생성' %></h1>
+    <form action="<%= row ? `/table/update/${tableName}/${row.id}` : `/table/create/${tableName}` %>" method="post">
+        <% columns.forEach(function(column) { %>
+            <div class="mb-3">
+                <label for="<%= column.COLUMN_NAME %>" class="form-label"><%= column.COLUMN_COMMENT || column.COLUMN_NAME %></label>
+                <input type="text" class="form-control" id="<%= column.COLUMN_NAME %>" name="<%= column.COLUMN_NAME %>"
+                       value="<%= row ? row[column.COLUMN_NAME] : '' %>"
+                        <%= column.COLUMN_NAME === 'id' ? 'readonly' : '' %>>
+            </div>
+        <% }); %>
+        <button type="submit" class="btn btn-primary"><%= row ? '수정' : '생성' %></button>
+        <a href="/table/view/<%= tableName %>" class="btn btn-secondary">취소</a>
+    </form>
+</div>

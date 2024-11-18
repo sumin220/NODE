@@ -36,6 +36,7 @@ const personRouter = require('./router/personRouter');
 const boardRouter = require('./router/boardRouter');
 const purchaseRouter = require('./router/purchaseRouter');
 const cartRouter = require('./router/cartRouter');
+const tableRouter = require('./router/tableRouter');
 
 
 app.use('/', rootRouter);
@@ -46,6 +47,7 @@ app.use('/person', personRouter);
 app.use('/board', boardRouter);
 app.use('/purchase', purchaseRouter);
 app.use('/cart', cartRouter);
+app.use('/table', tableRouter);
 
 
 app.use(express.static('public'));

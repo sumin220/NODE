@@ -1,0 +1,94 @@
+<div class="container">
+    <h1>구매 내역 수정</h1>
+    <form action="/purchase/update_process" method="post">
+        <input type="hidden" name="purchase_id" value="<%= purchaseItem.purchase_id %>">
+        <div class="mb-3">
+            <label for="customer" class="form-label">고객</label>
+            <select name="customer_id" id="customer" class="form-control">
+                <% customers.forEach(function(customer) { %>
+                    <option value="<%= customer.loginid %>" <%= purchaseItem.loginid === customer.loginid ? 'selected' : '' %>>
+                        <%= customer.name %>
+                    </option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="product" class="form-label">상품</label>
+            <select name="product_id" id="product" class="form-control" onchange="updatePrice()">
+                <% products.forEach(function(product) { %>
+                    <option value="<%= product.mer_id %>"
+                            data-price="<%= product.price %>"
+                            <%= purchaseItem.mer_id === product.mer_id ? 'selected' : '' %>>
+                        <%= product.name %>
+                    </option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">가격</label>
+            <input type="text" id="price" name="price" value="<%= purchaseItem.price %>" class="form-control" readonly>
+        </div>
+        <div class="mb-3">
+            <label for="quantity" class="form-label">수량</label>
+            <input type="number" id="quantity" name="qty" value="<%= purchaseItem.qty %>" class="form-control" min="1" onchange="updateTotal()">
+        </div>
+        <div class="mb-3">
+            <label for="total_price" class="form-label">총가격</label>
+            <input type="text" id="total_price" name="total_price" value="<%= purchaseItem.total %>" class="form-control" readonly>
+        </div>
+        <div class="mb-3">
+            <label for="point" class="form-label">포인트</label>
+            <input type="text" id="point" name="point" value="<%= purchaseItem.point %>" class="form-control" readonly>
+        </div>
+        <div class="mb-3">
+            <label for="payYN" class="form-label">지불여부</label>
+            <select name="payYN" id="payYN" class="form-control">
+                <option value="Y" <%= purchaseItem.payYN === 'Y' ? 'selected' : '' %>>YES</option>
+                <option value="N" <%= purchaseItem.payYN === 'N' ? 'selected' : '' %>>NO</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="cancel" class="form-label">취소여부</label>
+            <select name="cancel" id="cancel" class="form-control">
+                <option value="Y" <%= purchaseItem.cancel === 'Y' ? 'selected' : '' %>>YES</option>
+                <option value="N" <%= purchaseItem.cancel === 'N' ? 'selected' : '' %>>NO</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="refund" class="form-label">환불여부</label>
+            <select name="refund" id="refund" class="form-control">
+                <option value="Y" <%= purchaseItem.refund === 'Y' ? 'selected' : '' %>>YES</option>
+                <option value="N" <%= purchaseItem.refund === 'N' ? 'selected' : '' %>>NO</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">수정</button>
+        <a href="/purchase/view" class="btn btn-secondary">구매 목록 돌아가기</a>
+    </form>
+</div>
+
+<script>
+    // 상품 선택 시 가격 업데이트
+    function updatePrice() {
+        const productSelect = document.getElementById('product');
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        const price = selectedOption.getAttribute('data-price');
+        document.getElementById('price').value = price;
+        updateTotal();
+    }
+
+    // 수량 변경 시 총가격 및 포인트 업데이트
+    function updateTotal() {
+        const price = parseInt(document.getElementById('price').value || 0);
+        const quantity = parseInt(document.getElementById('quantity').value || 1);
+        const totalPrice = price * quantity;
+        const points = Math.floor(totalPrice * 0.05); // 포인트는 총가격의 5%
+        document.getElementById('total_price').value = totalPrice;
+        document.getElementById('point').value = points;
+    }
+</script>
+
+<style>
+    .form-label {
+        font-weight: bold;
+    }
+</style>

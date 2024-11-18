@@ -108,33 +108,51 @@ module.exports = {
             })
         })
     },
-    update_process: (req,res)=>{
+
+    update_process: (req, res) => {
         const post = req.body;
         const merId = req.body.merId;
-        const mainId = req.body.category.substring(0,4);
-        const subId = req.body.category.substring(4,8);
+        const mainId = req.body.category.substring(0, 4);
+        const subId = req.body.category.substring(4, 8);
         const sanName = sanitizeHtml(post.name);
-        const sanPrice = sanitizeHtml(post.price);
-        const sanStock = sanitizeHtml(post.stock);
+        const sanPrice = parseInt(post.price, 10);
+        const sanStock = parseInt(post.stock, 10);
         const sanBrand = sanitizeHtml(post.brand);
         const sanSupplier = sanitizeHtml(post.supplier);
         const sanImage = sanitizeHtml(post.image);
         const sanSaleYn = sanitizeHtml(post.sale_yn);
-        const sanSalePrice = sanitizeHtml(post.sale_price);
 
-        db.query(`update product set
-                                     main_id = ?, sub_id =?, name =?, price = ?,
-                                     stock = ?, brand = ?, supplier = ?, sale_yn = ?, sale_price=?, image=? where mer_id = ?`,
-            [mainId,subId,sanName,sanPrice,sanStock,sanBrand,sanSupplier,sanSaleYn,sanSalePrice,sanImage,merId],
-            (err, result)=>{
-                if(err){
+        // sale_price 처리: 입력값이 없거나 sale_yn이 'N'이면 NULL
+        const sanSalePrice =
+            sanSaleYn === 'N' || !post.sale_price ? null : parseInt(post.sale_price, 10);
+
+        db.query(
+            `UPDATE product SET
+                                main_id = ?, sub_id = ?, name = ?, price = ?,
+                                stock = ?, brand = ?, supplier = ?, sale_yn = ?, sale_price = ?, image = ?
+             WHERE mer_id = ?`,
+            [
+                mainId,
+                subId,
+                sanName,
+                sanPrice,
+                sanStock,
+                sanBrand,
+                sanSupplier,
+                sanSaleYn,
+                sanSalePrice,
+                sanImage,
+                merId,
+            ],
+            (err, result) => {
+                if (err) {
                     throw err;
                 }
                 res.redirect('/product/view');
-                res.end();
             }
-        )
+        );
     },
+
 
     delete_process: (req,res)=>{
         const merId = req.params.merId;
